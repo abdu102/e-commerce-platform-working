@@ -1,24 +1,36 @@
-import { ButtonHTMLAttributes, ReactNode } from 'react';
-import { clsx } from 'clsx';
+import type { ButtonHTMLAttributes, ReactNode } from 'react';
 
-type Variant = 'primary' | 'secondary' | 'success' | 'danger' | 'ghost';
-
-type Props = ButtonHTMLAttributes<HTMLButtonElement> & {
-  variant?: Variant;
+interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   children: ReactNode;
-};
+  variant?: 'primary' | 'secondary' | 'danger';
+  size?: 'sm' | 'md' | 'lg';
+}
 
-export default function Button({ variant = 'primary', className, children, ...rest }: Props) {
-  const base = 'inline-flex items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2';
-  const styles: Record<Variant, string> = {
-    primary: 'bg-brand-600 text-white hover:bg-brand-700 focus-visible:ring-brand-600',
-    secondary: 'bg-gray-100 text-gray-900 hover:bg-gray-200 focus-visible:ring-gray-400',
-    success: 'bg-emerald-600 text-white hover:bg-emerald-700 focus-visible:ring-emerald-600',
-    danger: 'bg-red-600 text-white hover:bg-red-700 focus-visible:ring-red-600',
-    ghost: 'bg-transparent text-gray-700 hover:bg-gray-100 focus-visible:ring-gray-300',
+export default function Button({ 
+  children, 
+  variant = 'primary', 
+  size = 'md', 
+  className = '', 
+  ...props 
+}: ButtonProps) {
+  const baseClasses = 'inline-flex items-center justify-center font-medium rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2';
+  
+  const variantClasses = {
+    primary: 'bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500',
+    secondary: 'bg-gray-200 text-gray-900 hover:bg-gray-300 focus:ring-gray-500',
+    danger: 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500'
   };
+  
+  const sizeClasses = {
+    sm: 'px-3 py-1.5 text-sm',
+    md: 'px-4 py-2 text-sm',
+    lg: 'px-6 py-3 text-base'
+  };
+  
+  const classes = `${baseClasses} ${variantClasses[variant]} ${sizeClasses[size]} ${className}`;
+  
   return (
-    <button className={clsx(base, styles[variant], className)} {...rest}>
+    <button className={classes} {...props}>
       {children}
     </button>
   );

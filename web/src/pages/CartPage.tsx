@@ -5,8 +5,6 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Trash2, Minus, Plus, ArrowLeft, ShoppingBag } from 'lucide-react';
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4001';
-
 interface CartItem {
   id: number;
   product: {

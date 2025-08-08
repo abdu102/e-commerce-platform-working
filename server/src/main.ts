@@ -3,7 +3,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './modules/app.module';
 import { ValidationPipe } from '@nestjs/common';
 import helmet from 'helmet';
-import cors from 'cors';
+const cors = require('cors');
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { cors: true });

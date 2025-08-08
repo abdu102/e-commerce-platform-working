@@ -15,12 +15,12 @@ export class UsersController {
   }
 
   @Patch('profile')
-  async updateProfile(@Request() req, @Body() data: { name: string; email: string }) {
+  async updateProfile(@Request() req: any, @Body() data: { name: string; email: string }) {
     return this.usersService.updateProfile(req.user.userId, data);
   }
 
   @Patch('password')
-  async changePassword(@Request() req, @Body() data: { currentPassword: string; newPassword: string }) {
+  async changePassword(@Request() req: any, @Body() data: { currentPassword: string; newPassword: string }) {
     return this.usersService.changePassword(req.user.userId, data);
   }
 

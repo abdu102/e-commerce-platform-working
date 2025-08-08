@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { Prisma } from '@prisma/client';
+import { OrderStatus } from '@prisma/client';
 
 @Injectable()
 export class OrdersService {
@@ -58,7 +58,7 @@ export class OrdersService {
     };
   }
 
-  async update(orderId: number, data: { status?: Prisma.OrderStatus; address?: string | null; phone?: string | null }) {
+  async update(orderId: number, data: { status?: OrderStatus; address?: string | null; phone?: string | null }) {
     const updated = await this.prisma.order.update({
       where: { id: orderId },
       data,
