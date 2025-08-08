@@ -26,6 +26,9 @@ class CreateOrderDto {
   @ValidateNested({ each: true })
   @Type(() => OrderItemDto)
   items!: OrderItemDto[];
+
+  @IsString()
+  address!: string;
 }
 
 class UpdateOrderDto {
@@ -62,7 +65,7 @@ export class OrdersController {
   @Post()
   @Roles('USER', 'ADMIN', 'SUPER_ADMIN')
   create(@Req() req: any, @Body() dto: CreateOrderDto) {
-    return this.service.create(req.user.userId, dto.items);
+    return this.service.create(req.user.userId, dto.items, dto.address);
   }
 
   @Put(':id')

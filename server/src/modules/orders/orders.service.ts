@@ -1,6 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import type { Product } from '@prisma/client';
 
 enum OrderStatus {
   PENDING = 'PENDING',
@@ -39,49 +38,56 @@ export class OrdersService {
     }));
   }
 
-  async create(userId: number, items: Array<{ productId: number; quantity: number }>) {
-    const productIds = items.map((i) => i.productId);
-    const products: Product[] = await this.prisma.product.findMany({
-      where: { id: { in: productIds } },
+  async create(userId: number, items: any[], address: string) {
+    // Get products to calculate total
+    const products = await this.prisma.product.findMany({
+      where: { id: { in: items.map((it: any) => it.productId) } }
     });
-    const productById = new Map<number, Product>(products.map((p) => [p.id, p]));
-    let total = 0;
-    for (const it of items) {
-      const p = productById.get(it.productId);
-      if (!p) throw new NotFoundException(`Product ${it.productId} not found`);
-      total += p.price * it.quantity;
-    }
-    const created = await this.prisma.order.create({
+    
+    const productById = products.reduce((acc: any, p: any) => {
+      acc[p.id] = p;
+      return acc;
+    }, {});
+
+    const total = items.reduce((sum: number, item: any) => {
+      const product = productById[item.productId];
+      return sum + (product.price * item.quantity);
+    }, 0);
+
+    const order = await this.prisma.order.create({
       data: {
         userId,
         total,
+        address,
         items: {
-          create: items.map((it) => ({
-            productId: it.productId,
-            quantity: it.quantity,
-            unitPrice: productById.get(it.productId)!.price,
-          })),
-        },
+          create: items.map((item: any) => ({
+            productId: item.productId,
+            quantity: item.quantity,
+            unitPrice: productById[item.productId].price
+          }))
+        }
       },
-      include: { items: { include: { product: true } } },
+      include: { items: { include: { product: true } } }
     });
+
     return {
-      ...created,
-      total: created.total / 100,
-      items: created.items.map((it: any) => ({ ...it, unitPrice: it.unitPrice / 100 })),
+      ...order,
+      total: order.total / 100,
+      items: order.items.map((it: any) => ({ ...it, unitPrice: it.unitPrice / 100 }))
     };
   }
 
-  async update(orderId: number, data: { status?: OrderStatus; address?: string | null; phone?: string | null }) {
-    const updated = await this.prisma.order.update({
-      where: { id: orderId },
+  async update(id: number, data: any) {
+    const order = await this.prisma.order.update({
+      where: { id },
       data,
-      include: { items: { include: { product: true } } },
+      include: { items: { include: { product: true } } }
     });
+
     return {
-      ...updated,
-      total: updated.total / 100,
-      items: updated.items.map((it: any) => ({ ...it, unitPrice: it.unitPrice / 100 }))
+      ...order,
+      total: order.total / 100,
+      items: order.items.map((it: any) => ({ ...it, unitPrice: it.unitPrice / 100 }))
     };
   }
 }
