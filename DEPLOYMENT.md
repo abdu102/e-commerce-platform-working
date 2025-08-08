@@ -4,211 +4,117 @@ This guide will help you deploy the E-Commerce platform to various hosting servi
 
 ## 🚀 Quick Deployment Options
 
-### Option 1: Vercel (Frontend) + Railway (Backend) - Recommended
+### Option 1: Railway (Backend) + Vercel (Frontend) - Recommended
+
+#### Backend Deployment (Railway)
+1. **Push your code to GitHub**
+2. **Connect to Railway**
+   - Go to [railway.app](https://railway.app)
+   - Import your GitHub repository
+   - Set the root directory to the project root (not `server`)
+3. **Configure Environment Variables**
+   ```
+   DATABASE_URL=your_database_url
+   JWT_SECRET=your_jwt_secret
+   PORT=4000
+   ```
+4. **Deploy Settings**
+   - Build Command: `npm run build`
+   - Start Command: `npm start`
+   - Health Check Path: `/health`
 
 #### Frontend Deployment (Vercel)
-1. **Push your code to GitHub**
-2. **Connect to Vercel**
+1. **Connect to Vercel**
    - Go to [vercel.com](https://vercel.com)
    - Import your GitHub repository
    - Set build settings:
      - Framework Preset: Vite
-     - Build Command: `cd web && npm run build`
-     - Output Directory: `web/dist`
-   - Add environment variable: `VITE_API_URL=https://your-backend-url.railway.app`
+     - Root Directory: `web`
+     - Build Command: `npm run build`
+     - Output Directory: `dist`
+   - Add environment variable: `VITE_API_URL=https://your-railway-backend-url.railway.app`
 
-#### Backend Deployment (Railway)
-1. **Connect to Railway**
+### Option 2: Railway (Full Stack)
+1. **Deploy to Railway**
    - Go to [railway.app](https://railway.app)
    - Import your GitHub repository
-   - Set the root directory to `server`
+   - Railway will automatically detect the monorepo structure
 2. **Configure Environment Variables**
    ```
-   DATABASE_URL=your-production-database-url
-   JWT_SECRET=your-secure-jwt-secret
+   DATABASE_URL=your_database_url
+   JWT_SECRET=your_jwt_secret
    PORT=4000
-   ```
-3. **Deploy**
-
-### Option 2: Heroku
-
-#### Backend Deployment
-1. **Install Heroku CLI**
-2. **Login to Heroku**
-   ```bash
-   heroku login
-   ```
-3. **Create Heroku app**
-   ```bash
-   heroku create your-app-name
-   ```
-4. **Set environment variables**
-   ```bash
-   heroku config:set DATABASE_URL=your-database-url
-   heroku config:set JWT_SECRET=your-secure-jwt-secret
-   ```
-5. **Deploy**
-   ```bash
-   git push heroku main
+   VITE_API_URL=https://your-railway-url.railway.app
    ```
 
-#### Frontend Deployment
-1. **Build the frontend**
+### Option 3: Docker Deployment
+1. **Build and run with Docker**
    ```bash
-   cd web
-   npm run build
+   docker build -t ecommerce-app .
+   docker run -p 4000:4000 -e DATABASE_URL=your_db_url -e JWT_SECRET=your_secret ecommerce-app
    ```
-2. **Deploy to Netlify/Vercel** with the `dist` folder
-
-### Option 3: DigitalOcean App Platform
-
-1. **Create a new app**
-2. **Connect your GitHub repository**
-3. **Configure the backend service**
-   - Source Directory: `server`
-   - Build Command: `npm install && npm run build`
-   - Run Command: `npm start`
-4. **Configure the frontend service**
-   - Source Directory: `web`
-   - Build Command: `npm install && npm run build`
-   - Output Directory: `dist`
 
 ## 🔧 Environment Variables
 
 ### Backend (.env)
 ```env
-DATABASE_URL="your-database-url"
-JWT_SECRET="your-secure-jwt-secret"
+DATABASE_URL="file:./dev.db"
+JWT_SECRET="your-secret-key"
 PORT=4000
 ```
 
 ### Frontend (.env)
 ```env
-VITE_API_URL="https://your-backend-url.com"
+VITE_API_URL="http://localhost:4000"
 ```
 
-## 🗄️ Database Setup
+## 📦 Build Process
 
-### Option 1: Railway PostgreSQL (Recommended)
-1. Create a new PostgreSQL service on Railway
-2. Copy the connection URL
-3. Set as `DATABASE_URL` in your backend environment
+The application uses a monorepo structure:
+- **Root**: Orchestrates both frontend and backend
+- **Server**: NestJS backend with Prisma ORM
+- **Web**: React frontend with Vite
 
-### Option 2: Supabase
-1. Create a new project on Supabase
-2. Get the connection string
-3. Set as `DATABASE_URL`
+### Build Commands
+```bash
+# Install all dependencies
+npm run install:all
 
-### Option 3: PlanetScale
-1. Create a new database on PlanetScale
-2. Get the connection string
-3. Set as `DATABASE_URL`
+# Build both frontend and backend
+npm run build
 
-## 🔐 Security Considerations
-
-### Production Checklist
-- [ ] Change `JWT_SECRET` to a secure random string
-- [ ] Use HTTPS for all API calls
-- [ ] Set up proper CORS configuration
-- [ ] Use a production database (PostgreSQL/MySQL)
-- [ ] Set up proper logging and monitoring
-- [ ] Configure rate limiting
-- [ ] Set up SSL certificates
-
-### Environment Variables Security
-- Never commit `.env` files to version control
-- Use environment variables for all sensitive data
-- Rotate secrets regularly
-- Use different secrets for different environments
-
-## 📊 Monitoring and Logging
-
-### Recommended Tools
-- **Sentry** - Error tracking
-- **LogRocket** - Session replay
-- **New Relic** - Performance monitoring
-- **Datadog** - Infrastructure monitoring
-
-## 🚀 Performance Optimization
-
-### Frontend
-- Enable gzip compression
-- Use CDN for static assets
-- Implement lazy loading
-- Optimize images
-- Use service workers for caching
-
-### Backend
-- Enable database connection pooling
-- Implement caching (Redis)
-- Use compression middleware
-- Optimize database queries
-- Set up proper indexing
-
-## 🔄 CI/CD Pipeline
-
-### GitHub Actions Example
-```yaml
-name: Deploy
-on:
-  push:
-    branches: [main]
-
-jobs:
-  deploy-backend:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
-        with:
-          node-version: '18'
-      - run: cd server && npm install
-      - run: cd server && npm run build
-      # Add deployment steps for your platform
-
-  deploy-frontend:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
-        with:
-          node-version: '18'
-      - run: cd web && npm install
-      - run: cd web && npm run build
-      # Add deployment steps for your platform
+# Start the application
+npm start
 ```
 
-## 🆘 Troubleshooting
+## 🐛 Troubleshooting
+
+### Railway Build Issues
+If you encounter build errors on Railway:
+
+1. **TypeScript not found**: Fixed by moving TypeScript to dependencies
+2. **Port conflicts**: Ensure PORT environment variable is set
+3. **Database connection**: Use a proper database URL (not file:./dev.db)
 
 ### Common Issues
+- **"tsc: not found"**: TypeScript is now in dependencies, not devDependencies
+- **"npm run build" failed**: Check that all dependencies are properly installed
+- **Database seeding**: Run `npm run setup` locally before deploying
 
-1. **CORS Errors**
-   - Ensure your backend CORS configuration includes your frontend domain
-   - Check that the API URL is correct
+## 🚀 Production Checklist
 
-2. **Database Connection Issues**
-   - Verify the `DATABASE_URL` is correct
-   - Ensure the database is accessible from your deployment platform
-   - Run database migrations: `npx prisma migrate deploy`
+- [ ] Set proper environment variables
+- [ ] Use production database (not SQLite file)
+- [ ] Set strong JWT_SECRET
+- [ ] Configure CORS for your domain
+- [ ] Set up proper logging
+- [ ] Configure health checks
+- [ ] Set up monitoring and alerts
 
-3. **Build Failures**
-   - Check that all dependencies are installed
-   - Verify Node.js version compatibility
-   - Check for TypeScript compilation errors
+## 📊 Performance Optimization
 
-4. **Environment Variables**
-   - Ensure all required environment variables are set
-   - Check that variable names match exactly
-   - Restart the application after changing environment variables
-
-## 📞 Support
-
-If you encounter issues during deployment:
-1. Check the platform's documentation
-2. Review the logs for error messages
-3. Verify all environment variables are set correctly
-4. Test locally before deploying
-
----
-
-**Note**: This is a development project. For production use, consider implementing additional security measures and monitoring solutions.
+- **Database**: Use connection pooling
+- **Caching**: Implement Redis for session storage
+- **CDN**: Use Cloudflare or similar for static assets
+- **Compression**: Enable gzip compression
+- **Monitoring**: Set up application performance monitoring
