@@ -3,7 +3,14 @@ import { OrdersService } from './orders.service';
 import { Roles, RolesGuard } from '../auth/roles.guard';
 import { IsArray, IsInt, Min, ValidateNested, IsOptional, IsString, IsEnum } from 'class-validator';
 import { Type } from 'class-transformer';
-import { OrderStatus } from '@prisma/client';
+
+enum OrderStatus {
+  PENDING = 'PENDING',
+  PAID = 'PAID',
+  SHIPPED = 'SHIPPED',
+  COMPLETED = 'COMPLETED',
+  CANCELED = 'CANCELED'
+}
 
 class OrderItemDto {
   @IsInt()

@@ -1,6 +1,13 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { OrderStatus } from '@prisma/client';
+
+enum OrderStatus {
+  PENDING = 'PENDING',
+  PAID = 'PAID',
+  SHIPPED = 'SHIPPED',
+  COMPLETED = 'COMPLETED',
+  CANCELED = 'CANCELED'
+}
 
 @Injectable()
 export class OrdersService {
@@ -12,10 +19,10 @@ export class OrdersService {
       include: { items: { include: { product: true } } },
       orderBy: { createdAt: 'desc' },
     });
-    return orders.map(o => ({
+    return orders.map((o: any) => ({
       ...o,
       total: o.total / 100,
-      items: o.items.map(it => ({ ...it, unitPrice: it.unitPrice / 100 }))
+      items: o.items.map((it: any) => ({ ...it, unitPrice: it.unitPrice / 100 }))
     }));
   }
 
@@ -24,17 +31,17 @@ export class OrdersService {
       include: { items: { include: { product: true } }, user: true },
       orderBy: { createdAt: 'desc' },
     });
-    return orders.map(o => ({
+    return orders.map((o: any) => ({
       ...o,
       total: o.total / 100,
-      items: o.items.map(it => ({ ...it, unitPrice: it.unitPrice / 100 }))
+      items: o.items.map((it: any) => ({ ...it, unitPrice: it.unitPrice / 100 }))
     }));
   }
 
   async create(userId: number, items: Array<{ productId: number; quantity: number }>) {
-    const productIds = items.map(i => i.productId);
+    const productIds = items.map((i: any) => i.productId);
     const products = await this.prisma.product.findMany({ where: { id: { in: productIds } } });
-    const productById = new Map(products.map(p => [p.id, p]));
+    const productById = new Map(products.map((p: any) => [p.id, p]));
     let total = 0;
     for (const it of items) {
       const p = productById.get(it.productId);
@@ -46,7 +53,7 @@ export class OrdersService {
         userId,
         total,
         items: {
-          create: items.map(it => ({ productId: it.productId, quantity: it.quantity, unitPrice: productById.get(it.productId)!.price }))
+          create: items.map((it: any) => ({ productId: it.productId, quantity: it.quantity, unitPrice: productById.get(it.productId)!.price }))
         }
       },
       include: { items: { include: { product: true } } },
@@ -54,7 +61,7 @@ export class OrdersService {
     return {
       ...created,
       total: created.total / 100,
-      items: created.items.map(it => ({ ...it, unitPrice: it.unitPrice / 100 }))
+      items: created.items.map((it: any) => ({ ...it, unitPrice: it.unitPrice / 100 }))
     };
   }
 
@@ -67,7 +74,7 @@ export class OrdersService {
     return {
       ...updated,
       total: updated.total / 100,
-      items: updated.items.map(it => ({ ...it, unitPrice: it.unitPrice / 100 }))
+      items: updated.items.map((it: any) => ({ ...it, unitPrice: it.unitPrice / 100 }))
     };
   }
 }

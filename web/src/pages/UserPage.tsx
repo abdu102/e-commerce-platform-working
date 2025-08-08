@@ -5,7 +5,6 @@ import { useAuth } from '../hooks/useAuth.tsx';
 import { 
   User, 
   Package, 
-  DollarSign, 
   Settings, 
   Edit, 
   Save, 
@@ -16,13 +15,6 @@ import {
 } from 'lucide-react';
 import axios from 'axios';
 
-interface UserData {
-  id: number;
-  name: string;
-  email: string;
-  role: string;
-}
-
 interface Order {
   id: number;
   total: number;
@@ -31,7 +23,7 @@ interface Order {
 }
 
 export default function UserPage() {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState('profile');
   const [isEditing, setIsEditing] = useState(false);

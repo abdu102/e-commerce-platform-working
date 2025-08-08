@@ -37,12 +37,12 @@ export default function HomePage() {
 
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4001';
 
-  const { data: categories, error: categoriesError } = useQuery({
+  const { data: categories } = useQuery({
     queryKey: ['categories'],
     queryFn: async () => (await axios.get(`${API_URL}/api/categories`)).data,
   });
 
-  const { data: products, isLoading, error: productsError } = useQuery({
+  const { data: products, isLoading } = useQuery({
     queryKey: ['products', searchTerm, selectedCategory],
     queryFn: async () => {
       const params = new URLSearchParams();
@@ -145,7 +145,7 @@ export default function HomePage() {
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-2xl font-bold text-gray-900">
               {selectedCategory 
-                ? categories?.find(c => c.id === selectedCategory)?.name + ' Products'
+                ? categories?.find((c: any) => c.id === selectedCategory)?.name + ' Products'
                 : 'All Products'
               }
             </h3>

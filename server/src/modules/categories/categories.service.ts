@@ -11,7 +11,7 @@ export class CategoriesService {
       orderBy: { name: 'asc' },
     });
     
-    return categories.map(category => ({
+    return categories.map((category: any) => ({
       ...category,
       products: category.products.map((product: any) => ({
         ...product,

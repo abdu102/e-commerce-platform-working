@@ -12,10 +12,10 @@ export class CartService {
       orderBy: { createdAt: 'desc' },
     });
     
-    const total = items.reduce((sum, item) => sum + (item.product.price * item.quantity), 0);
+    const total = items.reduce((sum: number, item: any) => sum + (item.product.price * item.quantity), 0);
     
     return {
-      items: items.map(item => ({
+      items: items.map((item: any) => ({
         ...item,
         product: { ...item.product, price: item.product.price / 100 }
       })),
