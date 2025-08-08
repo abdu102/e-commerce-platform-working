@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import type { Product } from '@prisma/client';
 
 enum OrderStatus {
   PENDING = 'PENDING',
@@ -39,9 +40,11 @@ export class OrdersService {
   }
 
   async create(userId: number, items: Array<{ productId: number; quantity: number }>) {
-    const productIds = items.map((i: any) => i.productId);
-    const products = await this.prisma.product.findMany({ where: { id: { in: productIds } } });
-    const productById = new Map(products.map((p: any) => [p.id, p]));
+    const productIds = items.map((i) => i.productId);
+    const products: Product[] = await this.prisma.product.findMany({
+      where: { id: { in: productIds } },
+    });
+    const productById = new Map<number, Product>(products.map((p) => [p.id, p]));
     let total = 0;
     for (const it of items) {
       const p = productById.get(it.productId);
@@ -53,15 +56,19 @@ export class OrdersService {
         userId,
         total,
         items: {
-          create: items.map((it: any) => ({ productId: it.productId, quantity: it.quantity, unitPrice: productById.get(it.productId)!.price }))
-        }
+          create: items.map((it) => ({
+            productId: it.productId,
+            quantity: it.quantity,
+            unitPrice: productById.get(it.productId)!.price,
+          })),
+        },
       },
       include: { items: { include: { product: true } } },
     });
     return {
       ...created,
       total: created.total / 100,
-      items: created.items.map((it: any) => ({ ...it, unitPrice: it.unitPrice / 100 }))
+      items: created.items.map((it: any) => ({ ...it, unitPrice: it.unitPrice / 100 })),
     };
   }
 
