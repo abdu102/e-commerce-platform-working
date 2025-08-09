@@ -196,7 +196,7 @@ export default function ProductPage() {
                 {[...Array(5)].map((_, i) => (
                   <Star key={i} className="w-4 h-4 fill-current" />
                 ))}
-                <span className="ml-2 text-sm text-gray-600">(24 reviews)</span>
+                <span className="ml-2 text-sm text-gray-600">({(reviews as any)?.length || 0} reviews)</span>
               </div>
             </div>
 
@@ -367,6 +367,12 @@ export default function ProductPage() {
           </motion.div>
         )}
 
+        {/* Q&A */}
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mt-16">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">Questions & Answers</h2>
+          <QnaSection productId={Number(id)} />
+        </motion.div>
+
         {/* Reviews */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mt-16">
           <h2 className="text-2xl font-bold text-gray-900 mb-6">Reviews</h2>
@@ -451,6 +457,43 @@ function ReviewForm({ productId, onSubmitted }: { productId: number; onSubmitted
       </div>
       <button type="submit" disabled={submitting} className="px-4 py-2 bg-blue-600 text-white rounded disabled:opacity-50">{submitting?'Submitting...':'Submit Review'}</button>
     </form>
+  );
+}
+
+function QnaSection({ productId }: { productId: number }) {
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
+  const { data, refetch } = useQuery({
+    queryKey: ['qna', productId],
+    queryFn: async () => (await axios.get(`${API_URL}/api/qna/${productId}`)).data,
+  });
+  const [question, setQuestion] = useState('');
+  const ask = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!question.trim()) return;
+    await axios.post(`${API_URL}/api/qna/question`, { productId, content: question });
+    setQuestion('');
+    refetch();
+  };
+  return (
+    <div className="bg-white rounded-2xl shadow-lg p-6 space-y-4">
+      <form onSubmit={ask} className="flex gap-2">
+        <input value={question} onChange={(e)=>setQuestion(e.target.value)} placeholder="Ask a question..." className="flex-1 border rounded px-3 py-2" />
+        <button className="px-4 py-2 bg-blue-600 text-white rounded">Ask</button>
+      </form>
+      {(data || []).map((q: any) => (
+        <div key={q.id} className="border-b last:border-b-0 pb-4">
+          <div className="font-medium text-gray-900">{q.user?.name || 'User'}</div>
+          <div className="text-gray-800">{q.content}</div>
+          {q.answers?.length > 0 && (
+            <div className="mt-2 space-y-1">
+              {q.answers.map((a: any) => (
+                <div key={a.id} className="text-sm text-gray-700"><span className="font-medium">{a.user?.name || 'User'}:</span> {a.content}</div>
+              ))}
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
   );
 }
 

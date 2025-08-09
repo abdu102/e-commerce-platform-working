@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
 
 export default function OrdersPage() {
   const { data: orders, isLoading, error } = useQuery({
@@ -37,7 +38,10 @@ export default function OrdersPage() {
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-6">Your Orders</h1>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-3xl font-bold">Your Orders</h1>
+        <Link to="/wishlist" className="text-sm px-3 py-1.5 rounded bg-blue-600 text-white hover:bg-blue-700">Wishlist</Link>
+      </div>
       <div className="space-y-4">
         {orders.map((order: any) => (
           <motion.div key={order.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}

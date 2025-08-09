@@ -169,15 +169,16 @@ export default function AdminPage() {
     mutationFn: async ({ id, data }: { id: number; data: any }) => axios.put(`${API_URL}/api/products/${id}`, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] });
-      setEditingProduct(null);
     },
+    onError: () => {
+      // leave modal open to show error
+    }
   });
 
   const updateOrderMutation = useMutation({
     mutationFn: async ({ id, data }: { id: number; data: any }) => axios.put(`${API_URL}/api/orders/${id}`, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ordersQueryKey });
-      setEditingOrder(null);
     },
   });
 

@@ -10,6 +10,7 @@ import { AppController } from './app.controller';
 import { UsersModule } from './users/users.module';
 import { ReviewsModule } from './reviews/reviews.module';
 import { WishlistModule } from './wishlist/wishlist.module';
+import { QnaModule } from './qna/qna.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { WishlistModule } from './wishlist/wishlist.module';
     UsersModule,
     ReviewsModule,
     WishlistModule,
+    QnaModule,
   ],
   controllers: [AppController],
 })
