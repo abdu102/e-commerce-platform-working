@@ -35,6 +35,15 @@ export class UsersController {
   async deleteUser(@Param('id', ParseIntPipe) id: number) {
     return this.usersService.deleteUser(id);
   }
+
+  @Patch(':id')
+  @Roles('SUPER_ADMIN')
+  async adminUpdateUser(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() data: { name?: string; email?: string; password?: string }
+  ) {
+    return this.usersService.adminUpdateUser(id, data);
+  }
 }
 
 

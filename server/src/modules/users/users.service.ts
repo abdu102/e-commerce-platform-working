@@ -65,6 +65,24 @@ export class UsersService {
   async deleteUser(userId: number) {
     return this.prisma.user.delete({ where: { id: userId } });
   }
+
+  async adminUpdateUser(userId: number, data: { name?: string; email?: string; password?: string }) {
+    const updateData: any = {};
+    if (data.name !== undefined) updateData.name = data.name;
+    if (data.email !== undefined) {
+      const exists = await this.prisma.user.findFirst({ where: { email: data.email, id: { not: userId } } });
+      if (exists) throw new BadRequestException('Email is already taken');
+      updateData.email = data.email;
+    }
+    if (data.password) {
+      updateData.password = await bcrypt.hash(data.password, 10);
+    }
+    return this.prisma.user.update({
+      where: { id: userId },
+      data: updateData,
+      select: { id: true, name: true, email: true, role: true }
+    });
+  }
 }
 
 

@@ -43,7 +43,7 @@ export class ProductsService {
         ? { price: 'desc' as const }
         : { createdAt: 'desc' as const };
 
-    const products = await this.prisma.product.findMany({ where, include: { category: true }, orderBy });
+    const products = await this.prisma.product.findMany({ where, include: { category: true, variants: true }, orderBy });
     
     return products.map((p: any) => ({ 
       ...p, 
@@ -56,7 +56,7 @@ export class ProductsService {
   async get(id: number) {
     const p = await this.prisma.product.findUnique({ 
       where: { id },
-      include: { category: true }
+      include: { category: true, variants: true }
     });
     if (!p) return null;
     return { 
