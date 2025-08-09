@@ -4,6 +4,7 @@ import { useMutation } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { ArrowLeft, CreditCard, CheckCircle } from 'lucide-react';
 import axios from 'axios';
+import '../lib/api';
 import { useToast } from '../components/Toast';
 import { useLanguage } from '../components/Language';
 
@@ -38,8 +39,9 @@ export default function CheckoutPage() {
   });
   const [isProcessing, setIsProcessing] = useState(false);
 
-  // Get checkout items from location state or redirect to cart
-  const checkoutItems: CheckoutItem[] = location.state?.items || [];
+  // Support both flows: from Cart ({ items }) or PDP Buy Now ({ product, quantity })
+  const state: any = location.state || {};
+  const checkoutItems: CheckoutItem[] = state.items || (state.product && state.quantity ? [{ product: state.product, quantity: state.quantity }] : []);
   const total = checkoutItems.reduce((sum, item) => sum + (item.product.price * item.quantity), 0);
 
   if (checkoutItems.length === 0) {
@@ -55,9 +57,18 @@ export default function CheckoutPage() {
     onSuccess: async () => {
       // Clear cart after successful order
       await axios.delete('/api/cart');
-      toast.success('Order placed successfully');
+      toast.success(t('orderPlaced'));
       navigate('/orders');
     },
+    onError: (err: any) => {
+      const status = err?.response?.status;
+      if (status === 401 || status === 403) {
+        toast.error('Please login to place an order');
+        navigate('/login', { state: { from: '/checkout' } });
+      } else {
+        toast.error(t('failedToCreateOrder'));
+      }
+    }
   });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -80,9 +91,6 @@ export default function CheckoutPage() {
       };
 
       await createOrderMutation.mutateAsync(orderData);
-    } catch (error) {
-      console.error('Order creation failed:', error);
-      alert('Failed to create order. Please try again.');
     } finally {
       setIsProcessing(false);
     }
@@ -97,7 +105,7 @@ export default function CheckoutPage() {
             <ArrowLeft className="w-4 h-4 mr-2" />
             {t('back')}
           </button>
-          <h1 className="text-3xl font-bold text-gray-900">Checkout</h1>
+          <h1 className="text-3xl font-bold text-gray-900">{t('checkout')}</h1>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -146,11 +154,11 @@ export default function CheckoutPage() {
 
           {/* Checkout Form */}
           <div className="bg-white rounded-lg shadow-sm p-6">
-            <h2 className="text-xl font-semibold mb-6">Shipping Information</h2>
+            <h2 className="text-xl font-semibold mb-6">{t('shippingInformation')}</h2>
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Shipping Address
+                  {t('shippingInformation')}
                 </label>
                 <textarea
                   name="shippingAddress"
@@ -159,13 +167,13 @@ export default function CheckoutPage() {
                   required
                   rows={3}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Enter your shipping address"
+                  placeholder={t('backToCart')}
                 />
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Phone Number
+                  {t('phoneNumber')}
                 </label>
                 <input
                   type="tel"
@@ -174,19 +182,19 @@ export default function CheckoutPage() {
                   onChange={handleInputChange}
                   required
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Enter your phone number"
+                  placeholder={t('phoneNumber')}
                 />
               </div>
 
               <div className="border-t pt-6">
                 <h3 className="text-lg font-semibold mb-4 flex items-center">
                   <CreditCard className="w-5 h-5 mr-2" />
-                  Payment Information
+                  {t('paymentInformation')}
                 </h3>
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Card Number
+                      {t('cardNumber')}
                     </label>
                     <input
                       type="text"
@@ -202,7 +210,7 @@ export default function CheckoutPage() {
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Expiry Date
+                        {t('expiryDate')}
                       </label>
                       <input
                         type="text"
@@ -232,7 +240,7 @@ export default function CheckoutPage() {
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Cardholder Name
+                      {t('cardholderName')}
                     </label>
                     <input
                       type="text"
@@ -257,12 +265,12 @@ export default function CheckoutPage() {
                 {isProcessing ? (
                   <>
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                    Processing...
+                    {t('processing')}
                   </>
                 ) : (
                   <>
                     <CheckCircle className="w-5 h-5 mr-2" />
-                    Place Order - ${total.toFixed(2)}
+                    {t('placeOrder')} - ${total.toFixed(2)}
                   </>
                 )}
               </motion.button>
