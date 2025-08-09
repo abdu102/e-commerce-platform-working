@@ -256,10 +256,7 @@ export default function HomePage() {
                           <span className="text-xl font-bold text-gray-900">
                             ${product.price.toFixed(2)}
                           </span>
-                          <button
-                            onClick={() => navigate(`/product/${product.id}`)}
-                            className="flex items-center space-x-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg transition-colors"
-                          >
+                          <button onClick={() => navigate(`/product/${product.id}`)} className="flex items-center space-x-1 bg-brand-600 hover:bg-brand-700 text-white px-3 py-2 rounded-lg transition-colors">
                             <ShoppingCart className="w-4 h-4" />
                             <span className="text-sm">View</span>
                           </button>

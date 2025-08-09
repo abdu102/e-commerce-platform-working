@@ -8,6 +8,8 @@ import { CategoriesModule } from './categories/categories.module';
 import { CartModule } from './cart/cart.module';
 import { AppController } from './app.controller';
 import { UsersModule } from './users/users.module';
+import { ReviewsModule } from './reviews/reviews.module';
+import { WishlistModule } from './wishlist/wishlist.module';
 
 @Module({
   imports: [
@@ -19,6 +21,8 @@ import { UsersModule } from './users/users.module';
     CategoriesModule,
     CartModule,
     UsersModule,
+    ReviewsModule,
+    WishlistModule,
   ],
   controllers: [AppController],
 })

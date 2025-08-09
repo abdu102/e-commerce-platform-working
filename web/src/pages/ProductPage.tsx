@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ShoppingCart, Heart, Star, Truck, Shield, ArrowLeft, Minus, Plus } from 'lucide-react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 import { useAuth } from '../hooks/useAuth.tsx';
 
@@ -30,9 +31,20 @@ export default function ProductPage() {
 
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
 
+  const queryClient = useQueryClient();
   const { data: product, isLoading, error } = useQuery({
     queryKey: ['product', id],
     queryFn: async () => (await axios.get(`${API_URL}/api/products/${id}`)).data,
+  });
+
+  const { data: reviews } = useQuery({
+    queryKey: ['reviews', id],
+    queryFn: async () => (await axios.get(`${API_URL}/api/reviews/${id}`)).data,
+  });
+
+  const toggleWishlist = useMutation({
+    mutationFn: async () => (await axios.post(`${API_URL}/api/wishlist/toggle`, { productId: Number(id) })).data,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['wishlist'] })
   });
 
   const handleAddToCart = async () => {
@@ -132,11 +144,7 @@ export default function ProductPage() {
             className="space-y-4"
           >
             <div className="aspect-square bg-white rounded-2xl overflow-hidden shadow-lg">
-              <img
-                src={image as string}
-                alt={typedProduct.name}
-                className="w-full h-full object-cover"
-              />
+              <img src={image as string} alt={typedProduct.name} className="w-full h-full object-cover" />
             </div>
             
             {/* Additional images placeholder */}
@@ -264,6 +272,7 @@ export default function ProductPage() {
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
+                  onClick={() => toggleWishlist.mutate()}
                   className="flex items-center justify-center space-x-2 bg-white border-2 border-gray-300 text-gray-600 hover:bg-gray-50 font-semibold py-3 px-6 rounded-xl transition-all duration-200"
                 >
                   <Heart className="w-5 h-5" />
@@ -319,6 +328,22 @@ export default function ProductPage() {
             </div>
           </motion.div>
         )}
+
+        {/* Reviews */}
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mt-16">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">Reviews</h2>
+          <div className="bg-white rounded-2xl shadow-lg p-6 space-y-4">
+            {(reviews || []).map((r: any) => (
+              <div key={r.id} className="border-b last:border-b-0 pb-4">
+                <div className="flex items-center justify-between">
+                  <div className="font-medium text-gray-900">{r.user?.name || 'User'}</div>
+                  <div className="text-yellow-500">{'★'.repeat(r.rating)}{'☆'.repeat(5 - r.rating)}</div>
+                </div>
+                {r.comment && <div className="text-gray-700 mt-1">{r.comment}</div>}
+              </div>
+            ))}
+          </div>
+        </motion.div>
       </div>
     </div>
   );
