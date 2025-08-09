@@ -28,7 +28,7 @@ export default function ProductPage() {
   const [selectedImage, setSelectedImage] = useState(0);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
 
-  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4001';
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
 
   const { data: product, isLoading, error } = useQuery({
     queryKey: ['product', id],

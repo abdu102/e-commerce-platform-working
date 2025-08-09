@@ -35,7 +35,7 @@ export default function HomePage() {
   );
   const [showFilters, setShowFilters] = useState(false);
 
-  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4001';
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
 
   const { data: categories } = useQuery({
     queryKey: ['categories'],

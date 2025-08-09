@@ -47,7 +47,18 @@ export default function OrdersPage() {
                 <div className="font-semibold">Order #{order.id}</div>
                 <div className="text-sm text-gray-600">{new Date(order.createdAt).toLocaleString()}</div>
               </div>
-              <div className="font-bold">${order.total.toFixed(2)}</div>
+              <div className="flex items-center gap-3">
+                <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                  order.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
+                  order.status === 'PAID' ? 'bg-blue-100 text-blue-800' :
+                  order.status === 'SHIPPED' ? 'bg-purple-100 text-purple-800' :
+                  order.status === 'COMPLETED' ? 'bg-green-100 text-green-800' :
+                  'bg-red-100 text-red-800'
+                }`}>
+                  {order.status}
+                </span>
+                <div className="font-bold">${order.total.toFixed(2)}</div>
+              </div>
             </div>
           </motion.div>
         ))}

@@ -16,7 +16,7 @@ interface AuthContextType {
   logout: () => void;
 }
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4001';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
 axios.defaults.baseURL = API_URL;
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
