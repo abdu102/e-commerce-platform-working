@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ToastProvider } from './components/Toast';
+import { LanguageProvider } from './components/Language';
+import LanguageToggle from './components/LanguageToggle';
 import { AuthProvider, useAuth } from './hooks/useAuth';
 import HomePage from './pages/HomePage';
 import ProductPage from './pages/ProductPage';
@@ -152,11 +154,14 @@ export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <ToastProvider>
-        <AuthProvider>
-          <Router>
-            <AppContent />
-          </Router>
-        </AuthProvider>
+        <LanguageProvider>
+          <AuthProvider>
+            <Router>
+              <div className="fixed top-4 left-4 z-[1001]"><LanguageToggle /></div>
+              <AppContent />
+            </Router>
+          </AuthProvider>
+        </LanguageProvider>
       </ToastProvider>
     </QueryClientProvider>
   );

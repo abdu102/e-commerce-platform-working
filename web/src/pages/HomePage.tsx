@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, ShoppingCart, Heart, Star, Filter } from 'lucide-react';
+import { useLanguage } from '../components/Language';
 
 function BannerSlider() {
   const slides = [
@@ -64,6 +65,7 @@ interface Category {
 
 export default function HomePage() {
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const [searchParams, setSearchParams] = useSearchParams();
   const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
   const [selectedCategory, setSelectedCategory] = useState<number | null>(
@@ -172,7 +174,7 @@ export default function HomePage() {
           animate={{ opacity: 1, y: 0 }}
           className="mb-12"
         >
-          <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">Shop by Category</h2>
+          <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">{t('shopByCategory')}</h2>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
             {categories?.map((category: Category) => (
               <motion.button
@@ -204,13 +206,13 @@ export default function HomePage() {
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-2xl font-bold text-gray-900">
               {selectedCategory 
-                ? categories?.find((c: any) => c.id === selectedCategory)?.name + ' Products'
-                : 'All Products'
+                ? categories?.find((c: any) => c.id === selectedCategory)?.name + ' '
+                : t('allProducts')
               }
             </h3>
             <button onClick={() => setShowFilters(!showFilters)} className="flex items-center gap-2 bg-brand-600 text-white px-4 py-2 rounded-lg shadow-md hover:shadow-lg transition">
               <Filter className="w-4 h-4" />
-              <span className="text-sm font-medium">Filters</span>
+              <span className="text-sm font-medium">{t('filters')}</span>
             </button>
           </div>
 
