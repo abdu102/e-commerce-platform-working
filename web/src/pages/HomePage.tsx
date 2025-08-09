@@ -6,9 +6,9 @@ import { Search, ShoppingCart, Heart, Star, Filter } from 'lucide-react';
 
 function BannerSlider() {
   const slides = [
-    { id: 1, title: 'Summer Tech Sale', subtitle: 'Up to 40% off', color: 'from-pink-500 to-yellow-500' },
-    { id: 2, title: 'Back to School', subtitle: 'Laptops and more', color: 'from-blue-500 to-purple-500' },
-    { id: 3, title: 'Pro Accessories', subtitle: 'Gear for creators', color: 'from-emerald-500 to-cyan-500' },
+    { id: 1, title: 'Summer Tech Sale', subtitle: 'Up to 40% off on top brands', color: 'from-pink-500 to-yellow-500', img: 'https://picsum.photos/seed/banner1/640/360', cta: 'Shop Deals' },
+    { id: 2, title: 'Back to School', subtitle: 'Laptops, tablets and accessories', color: 'from-blue-500 to-purple-500', img: 'https://picsum.photos/seed/banner2/640/360', cta: 'Browse Laptops' },
+    { id: 3, title: 'Pro Accessories', subtitle: 'Gear for creators and gamers', color: 'from-emerald-500 to-cyan-500', img: 'https://picsum.photos/seed/banner3/640/360', cta: 'Explore Accessories' },
   ];
   const [idx, setIdx] = useState(0);
   useEffect(() => {
@@ -17,9 +17,19 @@ function BannerSlider() {
   }, []);
   const s = slides[idx];
   return (
-    <div className={`relative overflow-hidden rounded-2xl p-8 text-white bg-gradient-to-r ${s.color} shadow-lg mb-10`}>
-      <div className="text-2xl md:text-3xl font-bold">{s.title}</div>
-      <div className="opacity-90">{s.subtitle}</div>
+    <div className={`relative overflow-hidden rounded-2xl p-6 md:p-8 text-white bg-gradient-to-r ${s.color} shadow-lg mb-10` }>
+      <div className="md:flex md:items-center md:justify-between gap-6">
+        <div className="md:max-w-lg">
+          <div className="text-2xl md:text-3xl font-bold">{s.title}</div>
+          <div className="opacity-95 mt-1 text-sm md:text-base">{s.subtitle}</div>
+          <button className="mt-4 inline-flex items-center px-4 py-2 rounded-lg bg-white text-gray-900 hover:bg-gray-100 text-sm font-medium">
+            {s.cta}
+          </button>
+        </div>
+        <div className="mt-5 md:mt-0">
+          <img src={s.img} alt="banner" className="w-full md:w-[420px] h-40 md:h-48 object-cover rounded-xl shadow" />
+        </div>
+      </div>
       <div className="absolute inset-y-0 left-0 w-24 bg-white/10 blur-2xl -skew-x-12" />
       <div className="absolute bottom-3 right-4 flex gap-2">
         {slides.map((slide, i) => (
@@ -205,28 +215,37 @@ export default function HomePage() {
           </div>
 
           {showFilters && (
-            <div className="bg-white rounded-xl shadow-md p-4 mb-8 grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Price min</label>
-                <input value={priceMin} onChange={(e)=>setPriceMin(e.target.value)} type="number" step="0.01" className="w-full border rounded px-3 py-2" placeholder="0" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Price max</label>
-                <input value={priceMax} onChange={(e)=>setPriceMax(e.target.value)} type="number" step="0.01" className="w-full border rounded px-3 py-2" placeholder="1000" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Sort</label>
-                <select value={sort} onChange={(e)=>setSort(e.target.value as any)} className="w-full border rounded px-3 py-2">
-                  <option value="newest">Newest</option>
-                  <option value="price_asc">Price: Low to High</option>
-                  <option value="price_desc">Price: High to Low</option>
-                </select>
-              </div>
-              <div className="flex items-end">
-                <label className="inline-flex items-center gap-2 text-sm text-gray-700">
-                  <input type="checkbox" checked={onlyInStock} onChange={(e)=>setOnlyInStock(e.target.checked)} className="rounded" />
-                  Only in stock
-                </label>
+            <div className="bg-white rounded-xl shadow-md p-4 mb-8">
+              <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-gray-600 mb-1">Min Price</label>
+                  <div className="flex gap-2">
+                    <input value={priceMin} onChange={(e)=>setPriceMin(e.target.value)} type="number" step="0.01" className="w-full border rounded px-3 py-2" placeholder="0" />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-600 mb-1">Max Price</label>
+                  <div className="flex gap-2">
+                    <input value={priceMax} onChange={(e)=>setPriceMax(e.target.value)} type="number" step="0.01" className="w-full border rounded px-3 py-2" placeholder="1000" />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-600 mb-1">Sort</label>
+                  <select value={sort} onChange={(e)=>setSort(e.target.value as any)} className="w-full border rounded px-3 py-2">
+                    <option value="newest">Newest</option>
+                    <option value="price_asc">Price: Low to High</option>
+                    <option value="price_desc">Price: High to Low</option>
+                  </select>
+                </div>
+                <div className="flex items-end">
+                  <label className="inline-flex items-center gap-2 text-sm text-gray-700">
+                    <input type="checkbox" checked={onlyInStock} onChange={(e)=>setOnlyInStock(e.target.checked)} className="rounded" />
+                    Only in stock
+                  </label>
+                </div>
+                <div className="flex items-end">
+                  <button onClick={()=>{setPriceMin('');setPriceMax('');setOnlyInStock(false);setSort('newest')}} className="px-4 py-2 text-sm rounded bg-gray-100 hover:bg-gray-200">Reset</button>
+                </div>
               </div>
             </div>
           )}
