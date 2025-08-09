@@ -165,48 +165,37 @@ export default function HomePage() {
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="relative bg-gradient-to-r from-blue-600 to-purple-600 text-white py-20"
+        className="relative bg-gradient-to-r from-blue-600 to-purple-600 text-white py-16 md:py-20"
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <h1 className="text-4xl md:text-6xl font-bold mb-6">
+            <h1 className="text-3xl md:text-6xl font-bold mb-4 md:mb-6">
               {t('discoverAmazing')}
               <span className="block text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-400">
                 {t('technology')}
               </span>
             </h1>
-            <p className="text-xl md:text-2xl mb-8 text-blue-100">
+            <p className="text-base md:text-2xl mb-6 md:mb-8 text-blue-100">
               {t('findTheLatestGadgets')}
             </p>
             
             {/* Search Bar */}
-            <div className="max-w-2xl mx-auto relative z-40" ref={searchContainerRef}>
+            <div className="max-w-xl md:max-w-2xl mx-auto relative z-40" ref={searchContainerRef}>
               <motion.div
                 initial={false}
-                animate={isSearchActive ? { scale: 1.06, y: -2, boxShadow: '0 24px 60px rgba(0,0,0,0.35)' } : { scale: 1, y: 0, boxShadow: '0 0 0 rgba(0,0,0,0)' }}
+                animate={isSearchActive ? { scale: 1.03, y: -2, boxShadow: '0 16px 40px rgba(0,0,0,0.28)' } : { scale: 1, y: 0, boxShadow: '0 0 0 rgba(0,0,0,0)' }}
                 transition={{ type: 'spring', stiffness: 260, damping: 22 }}
                 className="relative"
               >
-                {/* Floating label that enlarges on focus */}
-                <motion.div
-                  initial={false}
-                  animate={isSearchActive ? { scale: 1.12, y: -18, opacity: 1 } : { scale: 1, y: 0, opacity: 0.75 }}
-                  transition={{ type: 'spring', stiffness: 260, damping: 20 }}
-                  className="pointer-events-none absolute left-4 -top-6 text-white/95 font-semibold"
-                  style={{ textShadow: '0 8px 24px rgba(0,0,0,0.35)' }}
-                >
-                  {t('searchForProducts')}
-                </motion.div>
-
                 <div className="relative">
-                  <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                  <Search className="absolute left-3 md:left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 md:w-5 md:h-5" />
                   <input
                     type="text"
-                    placeholder={isSearchActive ? '' : t('searchForProducts')}
+                    placeholder={t('searchForProducts')}
                     value={searchTerm}
                     onFocus={() => setIsSearchActive(true)}
                     onChange={(e) => handleSearch(e.target.value)}
-                    className="w-full pl-12 pr-4 py-4 text-lg text-gray-900 bg-white rounded-xl shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full pl-10 md:pl-12 pr-3 md:pr-4 py-3 md:py-4 text-base md:text-lg text-gray-900 bg-white rounded-xl shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
 
                   {/* Suggestions dropdown */}
@@ -217,23 +206,23 @@ export default function HomePage() {
                         initial={{ opacity: 0, y: -6 }}
                         animate={{ opacity: 1, y: 6 }}
                         exit={{ opacity: 0, y: -6 }}
-                        className="absolute left-0 right-0 mt-2 bg-white rounded-xl shadow-2xl border border-gray-100 overflow-hidden"
+                        className="absolute left-0 right-0 mt-1 md:mt-2 bg-white rounded-xl shadow-2xl border border-gray-100 overflow-hidden"
                       >
                         {Array.isArray(suggestions) && suggestions.length > 0 ? (
-                          <ul className="max-h-96 overflow-auto">
+                          <ul className="max-h-80 md:max-h-96 overflow-auto">
                             {suggestions.map((p: Product) => (
                               <li
                                 key={p.id}
-                                className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 cursor-pointer"
+                                className="flex items-center gap-3 px-3 md:px-4 py-2 md:py-3 hover:bg-gray-50 cursor-pointer"
                                 onMouseDown={(e) => e.preventDefault()}
                                 onClick={() => { setIsSearchActive(false); navigate(`/product/${p.id}`); }}
                               >
-                                <img src={p.imageUrl} alt={p.name} className="w-12 h-12 rounded object-cover" />
+                                <img src={p.imageUrl} alt={p.name} className="w-10 h-10 md:w-12 md:h-12 rounded object-cover" />
                                 <div className="flex-1 min-w-0">
-                                  <div className="text-sm font-medium text-gray-900 truncate">{p.name}</div>
-                                  <div className="text-xs text-gray-500 truncate">{tnCategory(p.category?.name || '')}</div>
+                                  <div className="text-sm md:text-base font-medium text-gray-900 truncate">{p.name}</div>
+                                  <div className="text-xs md:text-sm text-gray-500 truncate">{tnCategory(p.category?.name || '')}</div>
                                 </div>
-                                <div className="text-sm font-semibold text-gray-900">${p.price.toFixed(2)}</div>
+                                <div className="text-sm md:text-base font-semibold text-gray-900">${p.price.toFixed(2)}</div>
                               </li>
                             ))}
                           </ul>
