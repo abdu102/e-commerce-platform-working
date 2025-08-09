@@ -2,8 +2,10 @@ import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
+import { useLanguage } from '../components/Language';
 
 export default function OrdersPage() {
+  const { t } = useLanguage();
   const { data: orders, isLoading, error } = useQuery({
     queryKey: ['orders'],
     queryFn: async () => (await axios.get('/api/orders')).data,
@@ -39,8 +41,8 @@ export default function OrdersPage() {
   return (
     <div className="max-w-5xl mx-auto px-4 py-8">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-bold">Your Orders</h1>
-        <Link to="/wishlist" className="text-sm px-3 py-1.5 rounded bg-blue-600 text-white hover:bg-blue-700">Wishlist</Link>
+        <h1 className="text-3xl font-bold">{t('orders')}</h1>
+        <Link to="/wishlist" className="text-sm px-3 py-1.5 rounded bg-blue-600 text-white hover:bg-blue-700">{t('wishlist')}</Link>
       </div>
       <div className="space-y-4">
         {orders.map((order: any) => (

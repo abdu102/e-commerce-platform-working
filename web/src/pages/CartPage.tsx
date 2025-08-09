@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
+import { useLanguage } from '../components/Language';
 import { Trash2, Minus, Plus, ArrowLeft, ShoppingBag } from 'lucide-react';
 import axios from 'axios';
 
@@ -24,6 +25,7 @@ interface CartResponse {
 
 export default function CartPage() {
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const queryClient = useQueryClient();
   const [isUpdating, setIsUpdating] = useState<number | null>(null);
 
@@ -92,12 +94,12 @@ export default function CartPage() {
             <div className="flex items-center space-x-4">
               <button onClick={() => navigate(-1)} className="flex items-center text-gray-600 hover:text-blue-600 transition-colors">
                 <ArrowLeft className="w-4 h-4 mr-2" />
-                Back
+                {t('back')}
               </button>
-              <h1 className="text-3xl font-bold text-gray-900">Shopping Cart</h1>
+              <h1 className="text-3xl font-bold text-gray-900">{t('shoppingCart')}</h1>
             </div>
             <div className="text-right">
-              <div className="text-sm text-gray-600">{itemCount} items</div>
+              <div className="text-sm text-gray-600">{itemCount} {t('items')}</div>
               <div className="text-2xl font-bold text-gray-900">${total.toFixed(2)}</div>
             </div>
           </div>
@@ -160,37 +162,37 @@ export default function CartPage() {
             {/* Order Summary */}
             <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="lg:col-span-1">
               <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 sticky top-8">
-                <h2 className="text-xl font-bold text-gray-900 mb-6">Order Summary</h2>
+                <h2 className="text-xl font-bold text-gray-900 mb-6">{t('orderSummary')}</h2>
 
                 <div className="space-y-4">
                   <div className="flex justify-between text-gray-600">
-                    <span>Subtotal ({itemCount} items)</span>
+                    <span>{t('subtotal')} ({itemCount} {t('items')})</span>
                     <span>${total.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between text-gray-600">
-                    <span>Shipping</span>
-                    <span className="text-green-600">Free</span>
+                    <span>{t('shipping')}</span>
+                    <span className="text-green-600">{t('free')}</span>
                   </div>
                   <div className="flex justify-between text-gray-600">
-                    <span>Tax</span>
+                    <span>{t('tax')}</span>
                     <span>${(total * 0.08).toFixed(2)}</span>
                   </div>
 
                   <div className="border-t border-gray-200 pt-4">
                     <div className="flex justify-between text-lg font-bold text-gray-900">
-                      <span>Total</span>
+                      <span>{t('total')}</span>
                       <span>${(total * 1.08).toFixed(2)}</span>
                     </div>
                   </div>
                 </div>
 
                 <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={buyAll} className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-4 px-6 rounded-xl mt-6 transition-all duration-200">
-                  Buy All Now
+                  {t('buyAllNow')}
                 </motion.button>
 
                 <div className="mt-4 text-center">
                   <Link to="/" className="text-blue-600 hover:text-blue-700 text-sm font-medium transition-colors">
-                    Continue Shopping
+                    {t('continueShopping')}
                   </Link>
                 </div>
               </div>
@@ -201,10 +203,10 @@ export default function CartPage() {
             <div className="text-gray-400 mb-6">
               <ShoppingBag className="w-24 h-24 mx-auto" />
       </div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Your cart is empty</h2>
-            <p className="text-gray-600 mb-8 max-w-md mx-auto">Looks like you haven't added any items to your cart yet. Start shopping to see some amazing products!</p>
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">{t('cartEmptyTitle')}</h2>
+            <p className="text-gray-600 mb-8 max-w-md mx-auto">{t('cartEmptyText')}</p>
             <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => navigate('/')} className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-3 px-8 rounded-xl transition-all duration-200">
-              Start Shopping
+              {t('startShopping')}
             </motion.button>
           </motion.div>
         )}

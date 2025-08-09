@@ -23,6 +23,7 @@ const queryClient = new QueryClient();
 function Header() {
   const { user, logout } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  // TODO: Replace these hardcoded strings with translations using useLanguage if desired throughout header
 
   return (
     <header className="bg-white shadow-sm border-b">
