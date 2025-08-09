@@ -71,8 +71,8 @@ export default function CartPage() {
 
   const buyAll = async () => {
     if (items.length === 0) return;
-    // Redirect to checkout page instead of directly creating order
-    navigate('/checkout');
+    // Pass items to checkout for a smooth purchase flow
+    navigate('/checkout', { state: { items } });
   };
 
   if (isLoading) {
