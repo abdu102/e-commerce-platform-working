@@ -4,6 +4,7 @@ import { useMutation } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { ArrowLeft, CreditCard, CheckCircle } from 'lucide-react';
 import axios from 'axios';
+import { useToast } from '../components/Toast';
 
 interface CheckoutItem {
   product: {
@@ -24,6 +25,7 @@ interface OrderData {
 export default function CheckoutPage() {
   const navigate = useNavigate();
   const location = useLocation();
+  const toast = useToast();
   const [formData, setFormData] = useState({
     shippingAddress: '',
     phone: '',
@@ -51,6 +53,7 @@ export default function CheckoutPage() {
     onSuccess: async () => {
       // Clear cart after successful order
       await axios.delete('/api/cart');
+      toast.success('Order placed successfully');
       navigate('/orders');
     },
   });

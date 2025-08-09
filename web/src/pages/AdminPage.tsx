@@ -20,6 +20,7 @@ import {
   Link as LinkIcon
 } from 'lucide-react';
 import axios from 'axios';
+import { useToast } from '../components/Toast';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
 
@@ -68,6 +69,7 @@ interface Category {
 
 export default function AdminPage() {
   const { user: currentUser } = useAuth();
+  const toast = useToast();
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState('overview');
   const [showCreateProduct, setShowCreateProduct] = useState(false);
@@ -960,8 +962,7 @@ export default function AdminPage() {
                     try { data.specs = JSON.parse(specsText); } catch {}
                   }
                   await updateProductMutation.mutateAsync({ id: editingProduct.id, data });
-                  // Give feedback and close
-                  alert('Product saved');
+                  toast.success('Product saved');
                   setEditingProduct(null);
                 }}
                 className="space-y-4"
@@ -1053,7 +1054,7 @@ export default function AdminPage() {
                     phone: form.get('phone') as string,
                   };
                   await updateOrderMutation.mutateAsync({ id: editingOrder.id, data });
-                  alert('Order updated');
+                  toast.success('Order updated');
                   setEditingOrder(null);
                 }}
                 className="space-y-4"

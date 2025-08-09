@@ -6,6 +6,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 import { useAuth } from '../hooks/useAuth.tsx';
 import React from 'react';
+import { useToast } from '../components/Toast';
 
 interface Product {
   id: number;
@@ -36,6 +37,7 @@ export default function ProductPage() {
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
 
   const queryClient = useQueryClient();
+  const toast = useToast();
   const { data: product, isLoading, error } = useQuery({
     queryKey: ['product', id],
     queryFn: async () => (await axios.get(`${API_URL}/api/products/${id}`)).data,
@@ -48,7 +50,7 @@ export default function ProductPage() {
 
   const toggleWishlist = useMutation({
     mutationFn: async () => (await axios.post(`${API_URL}/api/wishlist/toggle`, { productId: Number(id) })).data,
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['wishlist'] })
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['wishlist'] }); toast.success('Wishlist updated'); }
   });
 
   const handleAddToCart = async () => {
@@ -63,7 +65,7 @@ export default function ProductPage() {
         productId: (product as Product).id,
         quantity,
       });
-      alert('Added to cart');
+      toast.success('Added to cart');
     } catch (error) {
       console.error('Failed to add to cart:', error);
       alert('Failed to add to cart');
