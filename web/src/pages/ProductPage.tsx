@@ -7,7 +7,6 @@ import axios from 'axios';
 import { useAuth } from '../hooks/useAuth.tsx';
 import React from 'react';
 import { useToast } from '../components/Toast';
-import { useLanguage } from '../components/Language';
 
 interface Product {
   id: number;
@@ -39,7 +38,6 @@ export default function ProductPage() {
 
   const queryClient = useQueryClient();
   const toast = useToast();
-  const { t } = useLanguage();
   const { data: product, isLoading, error } = useQuery({
     queryKey: ['product', id],
     queryFn: async () => (await axios.get(`${API_URL}/api/products/${id}`)).data,
