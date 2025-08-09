@@ -960,6 +960,9 @@ export default function AdminPage() {
                     try { data.specs = JSON.parse(specsText); } catch {}
                   }
                   await updateProductMutation.mutateAsync({ id: editingProduct.id, data });
+                  // Give feedback and close
+                  alert('Product saved');
+                  setEditingProduct(null);
                 }}
                 className="space-y-4"
               >
@@ -1050,6 +1053,8 @@ export default function AdminPage() {
                     phone: form.get('phone') as string,
                   };
                   await updateOrderMutation.mutateAsync({ id: editingOrder.id, data });
+                  alert('Order updated');
+                  setEditingOrder(null);
                 }}
                 className="space-y-4"
               >

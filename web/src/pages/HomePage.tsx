@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, ShoppingCart, Heart, Star, Filter } from 'lucide-react';
@@ -17,9 +17,15 @@ function BannerSlider() {
   }, []);
   const s = slides[idx];
   return (
-    <div className={`rounded-2xl p-8 text-white bg-gradient-to-r ${s.color} shadow-lg mb-10 transition-all`}>
-      <div className="text-2xl font-bold">{s.title}</div>
+    <div className={`relative overflow-hidden rounded-2xl p-8 text-white bg-gradient-to-r ${s.color} shadow-lg mb-10`}>
+      <div className="text-2xl md:text-3xl font-bold">{s.title}</div>
       <div className="opacity-90">{s.subtitle}</div>
+      <div className="absolute inset-y-0 left-0 w-24 bg-white/10 blur-2xl -skew-x-12" />
+      <div className="absolute bottom-3 right-4 flex gap-2">
+        {slides.map((slide, i) => (
+          <button key={slide.id} onClick={()=>setIdx(i)} className={`w-2.5 h-2.5 rounded-full ${i===idx?'bg-white':'bg-white/50'}`} aria-label={`Go to slide ${i+1}`} />
+        ))}
+      </div>
     </div>
   );
 }
@@ -67,6 +73,7 @@ export default function HomePage() {
   const [onlyInStock, setOnlyInStock] = useState<boolean>(false);
   const [sort, setSort] = useState<'newest' | 'price_asc' | 'price_desc'>('newest');
 
+  const queryClient = useQueryClient();
   const { data: products, isLoading } = useQuery({
     queryKey: ['products', searchTerm, selectedCategory, priceMin, priceMax, onlyInStock, sort],
     queryFn: async () => {
@@ -97,6 +104,18 @@ export default function HomePage() {
   };
 
   const filteredProducts = products || [];
+
+  // Wishlist
+  const { data: wishlist } = useQuery({
+    queryKey: ['wishlist'],
+    queryFn: async () => (await axios.get(`${API_URL}/api/wishlist`)).data,
+    enabled: !!localStorage.getItem('token')
+  });
+  const toggleWishlist = useMutation({
+    mutationFn: async (productId: number) => (await axios.post(`${API_URL}/api/wishlist/toggle`, { productId })).data,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['wishlist'] })
+  });
+  const isWished = (pid: number) => Array.isArray(wishlist) && wishlist.some((w: any) => w.productId === pid);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
@@ -236,7 +255,9 @@ export default function HomePage() {
                     <motion.div
                       key={product.id}
                       whileHover={{ y: -5 }}
-                      className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow"
+                      onClick={() => navigate(`/product/${product.id}`)}
+                      className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow cursor-pointer"
+                      role="button"
                     >
                       <div className="relative">
                         <img
@@ -244,8 +265,8 @@ export default function HomePage() {
                           alt={product.name}
                           className="w-full h-48 object-cover"
                         />
-                        <button className="absolute top-2 right-2 p-2 bg-white rounded-full shadow-md hover:shadow-lg transition-shadow">
-                          <Heart className="w-4 h-4 text-gray-600" />
+                        <button onClick={(e)=>{e.stopPropagation(); toggleWishlist.mutate(product.id);}} className="absolute top-2 right-2 p-2 bg-white rounded-full shadow-md hover:shadow-lg transition-shadow">
+                          <Heart className={`w-4 h-4 ${isWished(product.id)?'text-red-500 fill-red-500':'text-gray-600'}`} />
                         </button>
                         {product.stock < 10 && product.stock > 0 && (
                           <span className="absolute top-2 left-2 px-2 py-1 bg-red-500 text-white text-xs rounded-full">
@@ -277,7 +298,7 @@ export default function HomePage() {
                           <span className="text-xl font-bold text-gray-900">
                             ${product.price.toFixed(2)}
                           </span>
-                          <button onClick={() => navigate(`/product/${product.id}`)} className="flex items-center space-x-1 bg-brand-600 hover:bg-brand-700 text-white px-3 py-2 rounded-lg transition-colors">
+                          <button onClick={(e) => { e.stopPropagation(); navigate(`/product/${product.id}`); }} className="flex items-center space-x-1 bg-brand-600 hover:bg-brand-700 text-white px-3 py-2 rounded-lg transition-colors">
                             <ShoppingCart className="w-4 h-4" />
                             <span className="text-sm">View</span>
                           </button>
