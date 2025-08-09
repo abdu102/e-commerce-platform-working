@@ -5,6 +5,7 @@ import { ShoppingCart, Heart, Star, Truck, Shield, ArrowLeft, Minus, Plus } from
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 import { useAuth } from '../hooks/useAuth.tsx';
+import React from 'react';
 
 interface Product {
   id: number;
@@ -12,12 +13,14 @@ interface Product {
   description: string;
   price: number;
   imageUrl?: string | null;
+  images?: string[] | null;
   category?: {
     id: number;
     name: string;
   } | null;
   stock?: number | null;
   specs?: any;
+  variants?: Array<{ id: number; color?: string; size?: string; stock: number; priceDelta?: number }>;
 }
 
 export default function ProductPage() {
@@ -27,6 +30,8 @@ export default function ProductPage() {
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
+  const [selectedColor, setSelectedColor] = useState<string | undefined>(undefined);
+  const [selectedSize, setSelectedSize] = useState<string | undefined>(undefined);
 
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
 
@@ -115,7 +120,18 @@ export default function ProductPage() {
   const categoryName = typedProduct.category?.name || 'Uncategorized';
   const priceNumber = typeof typedProduct.price === 'number' ? typedProduct.price : 0;
   const stockNumber = typeof typedProduct.stock === 'number' ? typedProduct.stock : 0;
-  const image = typedProduct.imageUrl || 'https://via.placeholder.com/600x600?text=No+Image';
+  const gallery = (typedProduct.images && typedProduct.images.length > 0) 
+    ? typedProduct.images 
+    : [typedProduct.imageUrl || 'https://via.placeholder.com/600x600?text=No+Image'];
+  const image = gallery[Math.min(selectedImage, gallery.length - 1)] as string;
+
+  const variantOptions = {
+    colors: Array.from(new Set((typedProduct.variants || []).map(v => v.color).filter(Boolean))) as string[],
+    sizes: Array.from(new Set((typedProduct.variants || []).map(v => v.size).filter(Boolean))) as string[],
+  };
+  const matchedVariant = (typedProduct.variants || []).find(v => (selectedColor ? v.color === selectedColor : true) && (selectedSize ? v.size === selectedSize : true));
+  const effectiveStock = matchedVariant ? matchedVariant.stock : (typedProduct.stock || 0);
+  const effectivePrice = typeof typedProduct.price === 'number' ? typedProduct.price + ((matchedVariant?.priceDelta || 0) / 100) : 0;
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -142,13 +158,14 @@ export default function ProductPage() {
             animate={{ opacity: 1, x: 0 }}
             className="space-y-4"
           >
-            <div className="aspect-square bg-white rounded-2xl overflow-hidden shadow-lg">
-              <img src={image as string} alt={typedProduct.name} className="w-full h-full object-cover" />
+            <div className="aspect-square bg-white rounded-2xl overflow-hidden shadow-lg group relative">
+              <img src={image as string} alt={typedProduct.name} className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-105" />
+              <div className="absolute bottom-3 right-3 bg-black/60 text-white text-xs px-2 py-1 rounded">Zoom</div>
             </div>
             
             {/* Additional images placeholder */}
             <div className="grid grid-cols-4 gap-4">
-              {[...Array(4)].map((_, i) => (
+              {gallery.slice(0, 6).map((img, i) => (
                 <div
                   key={i}
                   className={`aspect-square bg-white rounded-lg overflow-hidden cursor-pointer border-2 transition-all ${
@@ -156,11 +173,7 @@ export default function ProductPage() {
                   }`}
                   onClick={() => setSelectedImage(i)}
                 >
-                  <img
-                    src={image as string}
-                    alt={`${typedProduct.name} ${i + 1}`}
-                    className="w-full h-full object-cover"
-                  />
+                  <img src={img as string} alt={`${typedProduct.name} ${i + 1}`} className="w-full h-full object-cover" />
                 </div>
               ))}
             </div>
@@ -191,11 +204,11 @@ export default function ProductPage() {
             {/* Price */}
             <div className="flex items-center space-x-4">
               <span className="text-4xl font-bold text-gray-900">
-                ${priceNumber.toFixed(2)}
+                ${effectivePrice.toFixed(2)}
               </span>
-              {stockNumber < 10 && stockNumber > 0 && (
+              {effectiveStock < 10 && effectiveStock > 0 && (
                 <span className="px-3 py-1 bg-orange-100 text-orange-800 text-sm font-medium rounded-full">
-                  Only {stockNumber} left in stock
+                  Only {effectiveStock} left in stock
                 </span>
               )}
             </div>
@@ -203,12 +216,38 @@ export default function ProductPage() {
             {/* Description */}
             <p className="text-gray-600 text-lg leading-relaxed">{typedProduct.description}</p>
 
+            {/* Variant selectors */}
+            {(variantOptions.colors.length > 0 || variantOptions.sizes.length > 0) && (
+              <div className="space-y-3">
+                {variantOptions.colors.length > 0 && (
+                  <div>
+                    <div className="text-sm font-medium text-gray-700 mb-1">Color</div>
+                    <div className="flex flex-wrap gap-2">
+                      {variantOptions.colors.map((c) => (
+                        <button key={c} onClick={()=>setSelectedColor(c)} className={`px-3 py-1.5 rounded-full border ${selectedColor===c?'border-blue-600 bg-blue-50':'border-gray-300'}`}>{c}</button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {variantOptions.sizes.length > 0 && (
+                  <div>
+                    <div className="text-sm font-medium text-gray-700 mb-1">Size</div>
+                    <div className="flex flex-wrap gap-2">
+                      {variantOptions.sizes.map((s) => (
+                        <button key={s} onClick={()=>setSelectedSize(s)} className={`px-3 py-1.5 rounded-full border ${selectedSize===s?'border-blue-600 bg-blue-50':'border-gray-300'}`}>{s}</button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Stock Status */}
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-2">
-                <div className={`w-3 h-3 rounded-full ${stockNumber > 0 ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                <div className={`w-3 h-3 rounded-full ${effectiveStock > 0 ? 'bg-green-500' : 'bg-red-500'}`}></div>
                 <span className="text-sm text-gray-600">
-                  {stockNumber > 0 ? `${stockNumber} in stock` : 'Out of stock'}
+                  {effectiveStock > 0 ? `${effectiveStock} in stock` : 'Out of stock'}
                 </span>
               </div>
             </div>
@@ -227,16 +266,14 @@ export default function ProductPage() {
                   </button>
                   <span className="px-4 py-2 text-lg font-medium">{quantity}</span>
                   <button
-                    onClick={() => setQuantity(Math.min(Math.max(1, stockNumber), quantity + 1))}
-                    disabled={quantity >= stockNumber}
+                    onClick={() => setQuantity(Math.min(Math.max(1, effectiveStock), quantity + 1))}
+                    disabled={quantity >= effectiveStock}
                     className="p-2 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <Plus className="w-4 h-4" />
                   </button>
                 </div>
-                <span className="text-sm text-gray-600">
-                  {stockNumber} available
-                </span>
+                <span className="text-sm text-gray-600">{effectiveStock} available</span>
               </div>
             </div>
 
@@ -257,7 +294,7 @@ export default function ProductPage() {
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={handleAddToCart}
-                  disabled={stockNumber === 0 || isAddingToCart}
+                  disabled={effectiveStock === 0 || isAddingToCart}
                   className="flex items-center justify-center space-x-2 bg-white border-2 border-blue-600 text-blue-600 hover:bg-blue-50 font-semibold py-3 px-6 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isAddingToCart ? (
@@ -339,8 +376,19 @@ export default function ProductPage() {
                   <div className="text-yellow-500">{'★'.repeat(r.rating)}{'☆'.repeat(5 - r.rating)}</div>
                 </div>
                 {r.comment && <div className="text-gray-700 mt-1">{r.comment}</div>}
+                {r.photos && Array.isArray(r.photos) && r.photos.length > 0 && (
+                  <div className="flex gap-2 mt-2">
+                    {r.photos.map((p: string, i: number) => (
+                      <img key={i} src={p} className="w-16 h-16 object-cover rounded" />
+                    ))}
+                  </div>
+                )}
               </div>
             ))}
+            {/* Write a review */}
+            {user && (
+              <ReviewForm productId={Number(id)} onSubmitted={()=>queryClient.invalidateQueries({ queryKey: ['reviews', id] })} />
+            )}
           </div>
         </motion.div>
       </div>
@@ -348,4 +396,59 @@ export default function ProductPage() {
   );
 }
 
+function ReviewForm({ productId, onSubmitted }: { productId: number; onSubmitted: () => void }) {
+  const [rating, setRating] = useState(5);
+  const [comment, setComment] = useState('');
+  const [photos, setPhotos] = useState<string[]>([]);
+  const [submitting, setSubmitting] = useState(false);
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
+
+  const handleFiles = (files: FileList | null) => {
+    if (!files) return;
+    const readers: Promise<string>[] = [];
+    Array.from(files).slice(0, 4).forEach((file) => {
+      readers.push(new Promise((res) => {
+        const fr = new FileReader();
+        fr.onload = () => res(fr.result as string);
+        fr.readAsDataURL(file);
+      }));
+    });
+    Promise.all(readers).then((imgs) => setPhotos(imgs));
+  };
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmitting(true);
+    try {
+      await axios.post(`${API_URL}/api/reviews`, { productId, rating, comment, photos });
+      setRating(5);
+      setComment('');
+      setPhotos([]);
+      onSubmitted();
+    } catch (err) {
+      alert('Failed to submit review');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <form onSubmit={submit} className="mt-4 border-t pt-4">
+      <div className="flex items-center gap-3 mb-2">
+        <span className="text-sm text-gray-700">Your Rating:</span>
+        <div className="flex gap-1 text-yellow-500">
+          {[1,2,3,4,5].map((n) => (
+            <button type="button" key={n} onClick={()=>setRating(n)} className={n<=rating?'':'opacity-40'}>★</button>
+          ))}
+        </div>
+      </div>
+      <textarea value={comment} onChange={(e)=>setComment(e.target.value)} placeholder="Write your review..." className="w-full border rounded px-3 py-2 mb-2" />
+      <input type="file" accept="image/*" multiple onChange={(e)=>handleFiles(e.target.files)} className="mb-2" />
+      <div className="flex gap-2 mb-2">
+        {photos.map((p, i)=> (<img key={i} src={p} className="w-16 h-16 object-cover rounded" />))}
+      </div>
+      <button type="submit" disabled={submitting} className="px-4 py-2 bg-blue-600 text-white rounded disabled:opacity-50">{submitting?'Submitting...':'Submit Review'}</button>
+    </form>
+  );
+}
 

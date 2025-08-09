@@ -11,11 +11,20 @@ export class ReviewsService {
       include: { user: { select: { id: true, name: true } } },
       orderBy: { createdAt: 'desc' },
     });
-    return reviews;
+    return reviews.map((r: any) => ({
+      ...r,
+      photos: r.photos ? JSON.parse(r.photos) : null,
+    }));
   }
 
-  async create(userId: number, dto: { productId: number; rating: number; comment?: string }) {
-    return this.prisma.review.create({ data: { userId, productId: dto.productId, rating: dto.rating, comment: dto.comment } });
+  async create(userId: number, dto: { productId: number; rating: number; comment?: string; photos?: string[] }) {
+    return this.prisma.review.create({ data: { 
+      userId, 
+      productId: dto.productId, 
+      rating: dto.rating, 
+      comment: dto.comment,
+      photos: dto.photos ? JSON.stringify(dto.photos) : undefined
+    } });
   }
 
   async remove(userId: number, id: number) {

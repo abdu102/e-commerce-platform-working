@@ -3,6 +3,26 @@ import { useQuery } from '@tanstack/react-query';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, ShoppingCart, Heart, Star, Filter } from 'lucide-react';
+
+function BannerSlider() {
+  const slides = [
+    { id: 1, title: 'Summer Tech Sale', subtitle: 'Up to 40% off', color: 'from-pink-500 to-yellow-500' },
+    { id: 2, title: 'Back to School', subtitle: 'Laptops and more', color: 'from-blue-500 to-purple-500' },
+    { id: 3, title: 'Pro Accessories', subtitle: 'Gear for creators', color: 'from-emerald-500 to-cyan-500' },
+  ];
+  const [idx, setIdx] = useState(0);
+  useEffect(() => {
+    const t = setInterval(() => setIdx((i) => (i + 1) % slides.length), 3500);
+    return () => clearInterval(t);
+  }, []);
+  const s = slides[idx];
+  return (
+    <div className={`rounded-2xl p-8 text-white bg-gradient-to-r ${s.color} shadow-lg mb-10 transition-all`}>
+      <div className="text-2xl font-bold">{s.title}</div>
+      <div className="opacity-90">{s.subtitle}</div>
+    </div>
+  );
+}
 import axios from 'axios';
 
 interface Product {
@@ -117,6 +137,7 @@ export default function HomePage() {
 
       {/* Categories */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <BannerSlider />
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
