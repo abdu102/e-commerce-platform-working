@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { useAuth } from '../hooks/useAuth.tsx';
@@ -14,7 +14,10 @@ import {
   DollarSign,
   UserCheck,
   Crown,
-  X
+  X,
+  Tags,
+  Image as ImageIcon,
+  Link as LinkIcon
 } from 'lucide-react';
 import axios from 'axios';
 
@@ -77,8 +80,12 @@ export default function AdminPage() {
     imageUrl: '',
     specs: '',
   });
+  const [productImageMode, setProductImageMode] = useState<'url' | 'file'>('url');
+  const [productImagePreview, setProductImagePreview] = useState<string>('');
 
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [editingProductImageMode, setEditingProductImageMode] = useState<'url' | 'file'>('url');
+  const [editingProductImagePreview, setEditingProductImagePreview] = useState<string>('');
   const [editingOrder, setEditingOrder] = useState<Order | null>(null);
   const [showCreateAdmin, setShowCreateAdmin] = useState(false);
   const [newAdmin, setNewAdmin] = useState({ name: '', email: '', password: '' });
@@ -118,6 +125,15 @@ export default function AdminPage() {
     queryFn: async () => (await axios.get(`${API_URL}/api/categories`)).data,
   });
 
+  // Category create modal state
+  const [showCreateCategory, setShowCreateCategory] = useState(false);
+  const [createCategoryData, setCreateCategoryData] = useState({
+    name: '',
+    imageUrl: '',
+  });
+  const [categoryImageMode, setCategoryImageMode] = useState<'url' | 'file'>('url');
+  const [categoryImagePreview, setCategoryImagePreview] = useState<string>('');
+
   const ordersQueryKey = currentUser?.role === 'ADMIN' || currentUser?.role === 'SUPER_ADMIN' ? ['orders-all'] : ['orders'];
   const { data: orders } = useQuery({
     queryKey: ordersQueryKey,
@@ -135,6 +151,8 @@ export default function AdminPage() {
       queryClient.invalidateQueries({ queryKey: ['products'] });
       setShowCreateProduct(false);
       setCreateProductData({ name: '', description: '', price: '', categoryId: '', stock: '', imageUrl: '', specs: '' });
+      setProductImageMode('url');
+      setProductImagePreview('');
     },
   });
 
@@ -168,6 +186,28 @@ export default function AdminPage() {
     },
   });
 
+  useEffect(() => {
+    if (editingProduct) {
+      const src = editingProduct.imageUrl || '';
+      setEditingProductImagePreview(src);
+      setEditingProductImageMode('url');
+    } else {
+      setEditingProductImagePreview('');
+      setEditingProductImageMode('url');
+    }
+  }, [editingProduct]);
+
+  const createCategoryMutation = useMutation({
+    mutationFn: async (data: any) => axios.post(`${API_URL}/api/categories`, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['categories'] });
+      setShowCreateCategory(false);
+      setCreateCategoryData({ name: '', imageUrl: '' });
+      setCategoryImageMode('url');
+      setCategoryImagePreview('');
+    }
+  });
+
   const handleCreateProduct = async (e: React.FormEvent) => {
     e.preventDefault();
     const specs = createProductData.specs ? JSON.parse(createProductData.specs) : {};
@@ -182,6 +222,36 @@ export default function AdminPage() {
     });
   };
 
+  const handleCreateCategory = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await createCategoryMutation.mutateAsync({
+      name: createCategoryData.name,
+      imageUrl: createCategoryData.imageUrl || undefined,
+    });
+  };
+
+  const handleProductFileChange = async (file: File | null) => {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result as string;
+      setCreateProductData(prev => ({ ...prev, imageUrl: result }));
+      setProductImagePreview(result);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleCategoryFileChange = async (file: File | null) => {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result as string;
+      setCreateCategoryData(prev => ({ ...prev, imageUrl: result }));
+      setCategoryImagePreview(result);
+    };
+    reader.readAsDataURL(file);
+  };
+
   const stats = {
     totalProducts: products?.length || 0,
     totalUsers: users?.length || 0,
@@ -192,6 +262,7 @@ export default function AdminPage() {
   const tabs = [
     { id: 'overview', name: 'Overview', icon: TrendingUp },
     { id: 'products', name: 'Products', icon: Package },
+    { id: 'categories', name: 'Categories', icon: Tags },
     { id: 'users', name: 'Users', icon: Users },
     { id: 'orders', name: 'Orders', icon: ShoppingCart },
     ...(currentUser?.role === 'SUPER_ADMIN' ? [{ id: 'admins', name: 'Admins', icon: Users }] : []),
@@ -347,6 +418,9 @@ export default function AdminPage() {
                     <thead className="bg-gray-50">
                       <tr>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Image
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           Product
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -366,6 +440,15 @@ export default function AdminPage() {
                     <tbody className="bg-white divide-y divide-gray-200">
                       {products?.map((product: Product) => (
                         <tr key={product.id}>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="w-12 h-12 rounded-md overflow-hidden bg-gray-100">
+                              {product.imageUrl ? (
+                                <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover" />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center text-xs text-gray-400">No image</div>
+                              )}
+                            </div>
+                          </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="text-sm font-medium text-gray-900">{product.name}</div>
                           </td>
@@ -394,6 +477,62 @@ export default function AdminPage() {
                               </button>
                             </div>
                           </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </motion.div>
+            )}
+
+            {activeTab === 'categories' && (
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-xl font-bold text-gray-900">Categories Management</h2>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => setShowCreateCategory(true)}
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span>Add Category</span>
+                  </motion.button>
+                </div>
+
+                <div className="bg-blue-50 border border-blue-100 rounded-lg p-4">
+                  <div className="font-semibold text-blue-900">Quick Guide: Required Fields</div>
+                  <div className="text-sm text-blue-800 mt-1">
+                    <span className="font-medium">Category</span>: name (required), imageUrl (optional). 
+                    <span className="font-medium ml-3">Product</span>: name, description, price, stock, category, image (URL or upload), specs (JSON optional).
+                  </div>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Image</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Products</th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {categories?.map((c: any) => (
+                        <tr key={c.id}>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="w-12 h-12 rounded-md overflow-hidden bg-gray-100">
+                              {c.imageUrl ? (
+                                <img src={c.imageUrl} alt={c.name} className="w-full h-full object-cover" />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center text-xs text-gray-400">No image</div>
+                              )}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm font-medium text-gray-900">{c.name}</div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{Array.isArray(c.products) ? c.products.length : 0}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -658,15 +797,39 @@ export default function AdminPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Image URL
-                    </label>
-                    <input
-                      type="url"
-                      value={createProductData.imageUrl}
-                      onChange={(e) => setCreateProductData({ ...createProductData, imageUrl: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    />
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Product Image</label>
+                    <div className="flex items-center gap-2 mb-2">
+                      <button type="button" onClick={() => setProductImageMode('url')} className={`px-3 py-1.5 rounded-md text-sm inline-flex items-center gap-1 ${productImageMode === 'url' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'}`}>
+                        <LinkIcon className="w-4 h-4" /> URL
+                      </button>
+                      <button type="button" onClick={() => setProductImageMode('file')} className={`px-3 py-1.5 rounded-md text-sm inline-flex items-center gap-1 ${productImageMode === 'file' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'}`}>
+                        <ImageIcon className="w-4 h-4" /> Upload
+                      </button>
+                    </div>
+                    {productImageMode === 'url' ? (
+                      <input
+                        type="url"
+                        placeholder="https://..."
+                        value={createProductData.imageUrl}
+                        onChange={(e) => {
+                          setCreateProductData({ ...createProductData, imageUrl: e.target.value });
+                          setProductImagePreview(e.target.value);
+                        }}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    ) : (
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => handleProductFileChange(e.target.files?.[0] || null)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    )}
+                    {(productImagePreview || createProductData.imageUrl) && (
+                      <div className="mt-2 w-full h-32 rounded-lg overflow-hidden bg-gray-100">
+                        <img src={productImagePreview || createProductData.imageUrl} className="w-full h-full object-cover" />
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -703,6 +866,73 @@ export default function AdminPage() {
           </div>
         )}
 
+        {/* Create Category Modal */}
+        {showCreateCategory && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="bg-white rounded-xl p-6 w-full max-w-lg mx-4">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-bold text-gray-900">Create New Category</h2>
+                <button onClick={() => setShowCreateCategory(false)} className="text-gray-400 hover:text-gray-600">
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+              <form onSubmit={handleCreateCategory} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Category Name</label>
+                  <input
+                    type="text"
+                    required
+                    value={createCategoryData.name}
+                    onChange={(e) => setCreateCategoryData({ ...createCategoryData, name: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Category Image</label>
+                  <div className="flex items-center gap-2 mb-2">
+                    <button type="button" onClick={() => setCategoryImageMode('url')} className={`px-3 py-1.5 rounded-md text-sm inline-flex items-center gap-1 ${categoryImageMode === 'url' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'}`}>
+                      <LinkIcon className="w-4 h-4" /> URL
+                    </button>
+                    <button type="button" onClick={() => setCategoryImageMode('file')} className={`px-3 py-1.5 rounded-md text-sm inline-flex items-center gap-1 ${categoryImageMode === 'file' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'}`}>
+                      <ImageIcon className="w-4 h-4" /> Upload
+                    </button>
+                  </div>
+                  {categoryImageMode === 'url' ? (
+                    <input
+                      type="url"
+                      placeholder="https://..."
+                      value={createCategoryData.imageUrl}
+                      onChange={(e) => {
+                        setCreateCategoryData({ ...createCategoryData, imageUrl: e.target.value });
+                        setCategoryImagePreview(e.target.value);
+                      }}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  ) : (
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleCategoryFileChange(e.target.files?.[0] || null)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  )}
+                  {(categoryImagePreview || createCategoryData.imageUrl) && (
+                    <div className="mt-2 w-full h-32 rounded-lg overflow-hidden bg-gray-100">
+                      <img src={categoryImagePreview || createCategoryData.imageUrl} className="w-full h-full object-cover" />
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex justify-end space-x-4 pt-2">
+                  <button type="button" onClick={() => setShowCreateCategory(false)} className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50">Cancel</button>
+                  <button type="submit" className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg">Create</button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+
         {/* Edit Product Modal */}
         {editingProduct && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -722,7 +952,8 @@ export default function AdminPage() {
                     description: form.get('description') as string,
                     price: parseFloat(form.get('price') as string),
                     stock: parseInt(form.get('stock') as string),
-                    imageUrl: form.get('imageUrl') as string,
+                    imageUrl: (form.get('imageUrl') as string) || editingProductImagePreview || undefined,
+                    categoryId: parseInt((form.get('categoryId') as string) || `${editingProduct.category?.id || ''}`) || undefined,
                   };
                   const specsText = form.get('specs') as string;
                   if (specsText) {
@@ -732,14 +963,64 @@ export default function AdminPage() {
                 }}
                 className="space-y-4"
               >
-                <input name="name" defaultValue={editingProduct.name} className="w-full px-3 py-2 border rounded" />
-                <textarea name="description" defaultValue={editingProduct.description} className="w-full px-3 py-2 border rounded" />
-                <div className="grid grid-cols-2 gap-4">
-                  <input name="price" type="number" step="0.01" defaultValue={editingProduct.price} className="w-full px-3 py-2 border rounded" />
-                  <input name="stock" type="number" defaultValue={editingProduct.stock} className="w-full px-3 py-2 border rounded" />
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Product Name</label>
+                  <input name="name" defaultValue={editingProduct.name} className="w-full px-3 py-2 border rounded" />
                 </div>
-                <input name="imageUrl" defaultValue={editingProduct.imageUrl} className="w-full px-3 py-2 border rounded" />
-                <textarea name="specs" defaultValue={editingProduct.specs ? JSON.stringify(editingProduct.specs, null, 2) : ''} className="w-full px-3 py-2 border rounded" placeholder='{"Display":"6.1\""}' />
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                  <textarea name="description" defaultValue={editingProduct.description} className="w-full px-3 py-2 border rounded" />
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Price ($)</label>
+                    <input name="price" type="number" step="0.01" defaultValue={editingProduct.price} className="w-full px-3 py-2 border rounded" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Stock</label>
+                    <input name="stock" type="number" defaultValue={editingProduct.stock} className="w-full px-3 py-2 border rounded" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
+                    <select name="categoryId" defaultValue={editingProduct.category?.id || ''} className="w-full px-3 py-2 border rounded">
+                      <option value="">Keep current</option>
+                      {categories?.map((c: any) => (
+                        <option key={c.id} value={c.id}>{c.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Product Image</label>
+                  <div className="flex items-center gap-2 mb-2">
+                    <button type="button" onClick={() => setEditingProductImageMode('url')} className={`px-3 py-1.5 rounded-md text-sm inline-flex items-center gap-1 ${editingProductImageMode === 'url' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'}`}>
+                      <LinkIcon className="w-4 h-4" /> URL
+                    </button>
+                    <button type="button" onClick={() => setEditingProductImageMode('file')} className={`px-3 py-1.5 rounded-md text-sm inline-flex items-center gap-1 ${editingProductImageMode === 'file' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'}`}>
+                      <ImageIcon className="w-4 h-4" /> Upload
+                    </button>
+                  </div>
+                  {editingProductImageMode === 'url' ? (
+                    <input name="imageUrl" type="url" defaultValue={editingProduct.imageUrl || ''} onChange={(e) => setEditingProductImagePreview(e.target.value)} className="w-full px-3 py-2 border rounded" />
+                  ) : (
+                    <input type="file" accept="image/*" onChange={(e) => {
+                      const file = e.target.files?.[0] || null;
+                      if (!file) return;
+                      const reader = new FileReader();
+                      reader.onload = () => setEditingProductImagePreview(reader.result as string);
+                      reader.readAsDataURL(file);
+                    }} className="w-full px-3 py-2 border rounded" />
+                  )}
+                  {editingProductImagePreview && (
+                    <div className="mt-2 w-full h-32 rounded-lg overflow-hidden bg-gray-100">
+                      <img src={editingProductImagePreview} className="w-full h-full object-cover" />
+                    </div>
+                  )}
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Specifications (JSON)</label>
+                  <textarea name="specs" defaultValue={editingProduct.specs ? JSON.stringify(editingProduct.specs, null, 2) : ''} className="w-full px-3 py-2 border rounded" placeholder='{"Display":"6.1\""}' />
+                </div>
                 <div className="flex justify-end space-x-4 pt-2">
                   <button type="button" onClick={() => setEditingProduct(null)} className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50">Cancel</button>
                   <button type="submit" className="px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg">Save</button>
