@@ -596,6 +596,39 @@ async function main() {
       create: p 
     });
   }
+
+  // Seed 3-4 reviews per product if none exist yet
+  const productList = await prisma.product.findMany();
+  const reviewers = await prisma.user.findMany({ select: { id: true, name: true, email: true } });
+  const sampleComments = [
+    'Fantastic quality and great value for money.',
+    'Works as expected. Battery life could be better.',
+    'Exceeded my expectations. Highly recommend!',
+    'Solid performance, sleek design. Worth it.',
+    'Good overall, shipping was fast.',
+  ];
+  for (const prod of productList) {
+    const existingCount = await prisma.review.count({ where: { productId: prod.id } });
+    if (existingCount > 0) continue;
+    const num = 3 + Math.floor(Math.random() * 2); // 3-4 reviews
+    for (let i = 0; i < num; i++) {
+      const user = reviewers[(i + prod.id) % reviewers.length];
+      const rating = 4 + Math.floor(Math.random() * 2); // 4-5 stars
+      const comment = sampleComments[(i + rating) % sampleComments.length];
+      const photos = Math.random() > 0.7 ? [
+        `https://picsum.photos/seed/rev_${prod.id}_${i}/200/200`
+      ] : undefined;
+      await prisma.review.create({
+        data: {
+          userId: user.id,
+          productId: prod.id,
+          rating,
+          comment,
+          photos: photos ? JSON.stringify(photos) : undefined,
+        }
+      });
+    }
+  }
 }
 
 main().then(async () => prisma.$disconnect()).catch(async (e) => { console.error(e); await prisma.$disconnect(); process.exit(1); });

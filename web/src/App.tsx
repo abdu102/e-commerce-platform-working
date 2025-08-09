@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ToastProvider, useToast } from './components/Toast';
+import { ToastProvider } from './components/Toast';
 import { AuthProvider, useAuth } from './hooks/useAuth';
 import HomePage from './pages/HomePage';
 import ProductPage from './pages/ProductPage';
@@ -12,6 +12,7 @@ import OrdersPage from './pages/OrdersPage';
 import AdminPage from './pages/AdminPage';
 import UserPage from './pages/UserPage';
 import CheckoutPage from './pages/CheckoutPage';
+import WishlistPage from './pages/WishlistPage';
 import { ShoppingCart, Menu, X } from 'lucide-react';
 import { AnimatePresence } from 'framer-motion';
 
@@ -123,7 +124,6 @@ function Header() {
 
 function AppContent() {
   const location = useLocation();
-  const { success } = useToast();
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -137,6 +137,7 @@ function AppContent() {
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/cart" element={<CartPage />} />
             <Route path="/orders" element={<OrdersPage />} />
+            <Route path="/wishlist" element={<WishlistPage />} />
             <Route path="/admin" element={<AdminPage />} />
             <Route path="/user" element={<UserPage />} />
             <Route path="/checkout" element={<CheckoutPage />} />
