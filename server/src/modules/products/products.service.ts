@@ -48,7 +48,8 @@ export class ProductsService {
     return products.map((p: any) => ({ 
       ...p, 
       price: p.price / 100,
-      specs: p.specs ? JSON.parse(p.specs) : null
+      specs: p.specs ? JSON.parse(p.specs) : null,
+      images: p.images ? JSON.parse(p.images) : null,
     }));
   }
 
@@ -61,7 +62,8 @@ export class ProductsService {
     return { 
       ...p, 
       price: p.price / 100,
-      specs: p.specs ? JSON.parse(p.specs) : null
+      specs: p.specs ? JSON.parse(p.specs) : null,
+      images: p.images ? JSON.parse(p.images) : null,
     };
   }
 
@@ -75,13 +77,18 @@ export class ProductsService {
     specs?: string;
   }) {
     const created = await this.prisma.product.create({ 
-      data: { ...data, price: Math.round(data.price * 100) },
+      data: { 
+        ...data,
+        price: Math.round(data.price * 100),
+        images: (data as any).images && typeof (data as any).images !== 'string' ? JSON.stringify((data as any).images) : (data as any).images,
+      },
       include: { category: true }
     });
     return { 
       ...created, 
       price: created.price / 100,
-      specs: created.specs ? JSON.parse(created.specs) : null
+      specs: created.specs ? JSON.parse(created.specs) : null,
+      images: created.images ? JSON.parse(created.images) : null,
     };
   }
 
@@ -92,6 +99,9 @@ export class ProductsService {
     if (data.specs && typeof data.specs !== 'string') {
       data.specs = JSON.stringify(data.specs);
     }
+    if ((data as any).images && typeof (data as any).images !== 'string') {
+      (data as any).images = JSON.stringify((data as any).images);
+    }
     const updated = await this.prisma.product.update({
       where: { id },
       data,
@@ -101,7 +111,8 @@ export class ProductsService {
     return { 
       ...updated, 
       price: updated.price / 100,
-      specs: updated.specs ? JSON.parse(updated.specs) : null
+      specs: updated.specs ? JSON.parse(updated.specs) : null,
+      images: updated.images ? JSON.parse(updated.images) : null,
     };
   }
 
