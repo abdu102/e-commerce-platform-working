@@ -195,7 +195,7 @@ export default function HomePage() {
                     className="w-full h-full object-cover"
                   />
                 </div>
-                <span className="text-sm font-medium">{category.name}</span>
+                <span className="text-sm font-medium">{useLanguage().tnCategory(category.name)}</span>
               </motion.button>
             ))}
           </div>

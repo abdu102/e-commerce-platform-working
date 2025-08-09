@@ -47,6 +47,7 @@ interface LanguageContextValue {
   lang: Lang;
   setLang: (l: Lang) => void;
   t: (key: keyof typeof dictionary) => string;
+  tnCategory: (name: string) => string;
 }
 
 const LanguageContext = createContext<LanguageContextValue | undefined>(undefined);
@@ -66,7 +67,20 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
 
   const t = (key: keyof typeof dictionary) => dictionary[key]?.[lang] ?? key;
 
-  const value = useMemo(() => ({ lang, setLang, t }), [lang]);
+  const tnCategory = (name: string) => {
+    if (lang === 'en') return name;
+    const map: Record<string, string> = {
+      Smartphones: 'Смартфоны',
+      Laptops: 'Ноутбуки',
+      Tablets: 'Планшеты',
+      Headphones: 'Наушники',
+      Smartwatches: 'Смарт-часы',
+      Gaming: 'Игры',
+    };
+    return map[name] || name;
+  };
+
+  const value = useMemo(() => ({ lang, setLang, t, tnCategory }), [lang]);
   return <LanguageContext.Provider value={value}>{children}</LanguageContext.Provider>;
 }
 

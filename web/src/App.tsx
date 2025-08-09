@@ -16,6 +16,7 @@ import UserPage from './pages/UserPage';
 import CheckoutPage from './pages/CheckoutPage';
 import WishlistPage from './pages/WishlistPage';
 import { ShoppingCart, Menu, X } from 'lucide-react';
+import { useLanguage } from './components/Language';
 import { AnimatePresence } from 'framer-motion';
 
 const queryClient = new QueryClient();
@@ -23,6 +24,7 @@ const queryClient = new QueryClient();
 function Header() {
   const { user, logout } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { t } = useLanguage();
   // TODO: Replace these hardcoded strings with translations using useLanguage if desired throughout header
 
   return (
@@ -35,7 +37,7 @@ function Header() {
           
           <div className="hidden md:flex items-center space-x-8">
             <Link to="/" className="text-gray-600 hover:text-gray-900">
-              Home
+              {t('home')}
             </Link>
             {user && (
               <>
@@ -43,22 +45,22 @@ function Header() {
                   <ShoppingCart className="w-5 h-5" />
                 </Link>
                 <Link to="/orders" className="text-gray-600 hover:text-gray-900">
-                  Orders
+                  {t('orders')}
                 </Link>
                 {user.role === 'ADMIN' || user.role === 'SUPER_ADMIN' ? (
                   <Link to="/admin" className="text-gray-600 hover:text-gray-900">
-                    Admin
+                    {t('admin')}
                   </Link>
                 ) : (
                   <Link to="/user" className="text-gray-600 hover:text-gray-900">
-                    Profile
+                    {t('profile')}
                   </Link>
                 )}
                 <button
                   onClick={logout}
                   className="text-gray-600 hover:text-gray-900"
                 >
-                  Logout
+                  {t('logout')}
                 </button>
               </>
             )}
@@ -84,8 +86,8 @@ function Header() {
         {isMenuOpen && (
           <div className="md:hidden">
             <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-              <Link to="/" className="block px-3 py-2 text-gray-600 hover:text-gray-900">
-                Home
+                <Link to="/" className="block px-3 py-2 text-gray-600 hover:text-gray-900">
+                  {t('home')}
               </Link>
               {user && (
                 <>
@@ -93,22 +95,22 @@ function Header() {
                     Cart
                   </Link>
                   <Link to="/orders" className="block px-3 py-2 text-gray-600 hover:text-gray-900">
-                    Orders
+                    {t('orders')}
                   </Link>
                   {user.role === 'ADMIN' || user.role === 'SUPER_ADMIN' ? (
                     <Link to="/admin" className="block px-3 py-2 text-gray-600 hover:text-gray-900">
-                      Admin
+                      {t('admin')}
                     </Link>
                   ) : (
                     <Link to="/user" className="block px-3 py-2 text-gray-600 hover:text-gray-900">
-                      Profile
+                      {t('profile')}
                     </Link>
                   )}
                   <button
                     onClick={logout}
                     className="block w-full text-left px-3 py-2 text-gray-600 hover:text-gray-900"
                   >
-                    Logout
+                    {t('logout')}
                   </button>
                 </>
               )}

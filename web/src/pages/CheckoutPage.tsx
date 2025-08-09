@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { ArrowLeft, CreditCard, CheckCircle } from 'lucide-react';
 import axios from 'axios';
 import { useToast } from '../components/Toast';
+import { useLanguage } from '../components/Language';
 
 interface CheckoutItem {
   product: {
@@ -26,6 +27,7 @@ export default function CheckoutPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const toast = useToast();
+  const { t } = useLanguage();
   const [formData, setFormData] = useState({
     shippingAddress: '',
     phone: '',
@@ -91,12 +93,9 @@ export default function CheckoutPage() {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="flex items-center mb-8">
-          <button
-            onClick={() => navigate('/cart')}
-            className="flex items-center text-gray-600 hover:text-gray-900 mr-4"
-          >
+          <button onClick={() => navigate('/cart')} className="flex items-center text-gray-600 hover:text-gray-900 mr-4">
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Cart
+            {t('back')}
           </button>
           <h1 className="text-3xl font-bold text-gray-900">Checkout</h1>
         </div>
@@ -104,7 +103,7 @@ export default function CheckoutPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Order Summary */}
           <div className="bg-white rounded-lg shadow-sm p-6">
-            <h2 className="text-xl font-semibold mb-4">Order Summary</h2>
+            <h2 className="text-xl font-semibold mb-4">{t('orderSummary')}</h2>
             <div className="space-y-4">
               {checkoutItems.map((item, index) => (
                 <motion.div
@@ -139,7 +138,7 @@ export default function CheckoutPage() {
             </div>
             <div className="border-t pt-4 mt-4">
               <div className="flex justify-between items-center">
-                <span className="text-lg font-semibold text-gray-900">Total</span>
+                 <span className="text-lg font-semibold text-gray-900">{t('total')}</span>
                 <span className="text-2xl font-bold text-gray-900">${total.toFixed(2)}</span>
               </div>
             </div>
