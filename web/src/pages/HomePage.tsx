@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -73,6 +73,7 @@ export default function HomePage() {
     searchParams.get('category') ? parseInt(searchParams.get('category')!) : null
   );
   const [showFilters, setShowFilters] = useState(false);
+  const productsRef = useRef<HTMLDivElement | null>(null);
 
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
 
@@ -107,6 +108,15 @@ export default function HomePage() {
     if (selectedCategory) params.append('category', selectedCategory.toString());
     setSearchParams(params);
   }, [searchTerm, selectedCategory, setSearchParams]);
+
+  // Auto scroll to products when searching; scroll to top if cleared
+  useEffect(() => {
+    if (searchTerm.trim()) {
+      productsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [searchTerm]);
 
   const handleSearch = (value: string) => {
     setSearchTerm(value);
@@ -203,7 +213,7 @@ export default function HomePage() {
         </motion.div>
 
         {/* Products Section */}
-        <div className="mb-8">
+        <div ref={productsRef} className="mb-8">
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-2xl font-bold text-gray-900">
               {selectedCategory 
