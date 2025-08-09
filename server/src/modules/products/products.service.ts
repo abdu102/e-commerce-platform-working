@@ -5,7 +5,14 @@ import { PrismaService } from '../prisma/prisma.service';
 export class ProductsService {
   constructor(private prisma: PrismaService) {}
 
-  async list(categoryId?: number, search?: string) {
+  async list(
+    categoryId?: number,
+    search?: string,
+    minPrice?: number,
+    maxPrice?: number,
+    inStock?: boolean,
+    sort?: 'price_asc' | 'price_desc' | 'newest'
+  ) {
     const where: any = {};
     
     if (categoryId) {
@@ -19,11 +26,24 @@ export class ProductsService {
       ];
     }
 
-    const products = await this.prisma.product.findMany({ 
-      where,
-      include: { category: true },
-      orderBy: { createdAt: 'desc' } 
-    });
+    if (minPrice !== undefined || maxPrice !== undefined) {
+      where.price = {};
+      if (minPrice !== undefined) where.price.gte = Math.round(minPrice * 100);
+      if (maxPrice !== undefined) where.price.lte = Math.round(maxPrice * 100);
+    }
+
+    if (inStock !== undefined) {
+      where.stock = inStock ? { gt: 0 } : { equals: 0 };
+    }
+
+    const orderBy =
+      sort === 'price_asc'
+        ? { price: 'asc' as const }
+        : sort === 'price_desc'
+        ? { price: 'desc' as const }
+        : { createdAt: 'desc' as const };
+
+    const products = await this.prisma.product.findMany({ where, include: { category: true }, orderBy });
     
     return products.map((p: any) => ({ 
       ...p, 

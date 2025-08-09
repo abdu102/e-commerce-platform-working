@@ -57,10 +57,21 @@ export class ProductsController {
   constructor(private service: ProductsService) {}
 
   @Get()
-  list(@Query('categoryId') categoryId?: string, @Query('search') search?: string) {
+  list(
+    @Query('categoryId') categoryId?: string,
+    @Query('search') search?: string,
+    @Query('minPrice') minPrice?: string,
+    @Query('maxPrice') maxPrice?: string,
+    @Query('inStock') inStock?: string,
+    @Query('sort') sort?: 'price_asc' | 'price_desc' | 'newest'
+  ) {
     return this.service.list(
       categoryId ? parseInt(categoryId) : undefined,
-      search
+      search,
+      minPrice ? parseFloat(minPrice) : undefined,
+      maxPrice ? parseFloat(maxPrice) : undefined,
+      inStock === 'true' ? true : inStock === 'false' ? false : undefined,
+      sort
     );
   }
 

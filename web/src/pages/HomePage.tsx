@@ -42,12 +42,21 @@ export default function HomePage() {
     queryFn: async () => (await axios.get(`${API_URL}/api/categories`)).data,
   });
 
+  const [priceMin, setPriceMin] = useState<string>('');
+  const [priceMax, setPriceMax] = useState<string>('');
+  const [onlyInStock, setOnlyInStock] = useState<boolean>(false);
+  const [sort, setSort] = useState<'newest' | 'price_asc' | 'price_desc'>('newest');
+
   const { data: products, isLoading } = useQuery({
-    queryKey: ['products', searchTerm, selectedCategory],
+    queryKey: ['products', searchTerm, selectedCategory, priceMin, priceMax, onlyInStock, sort],
     queryFn: async () => {
       const params = new URLSearchParams();
       if (searchTerm) params.append('search', searchTerm);
       if (selectedCategory) params.append('categoryId', selectedCategory.toString());
+      if (priceMin) params.append('minPrice', priceMin);
+      if (priceMax) params.append('maxPrice', priceMax);
+      if (onlyInStock) params.append('inStock', 'true');
+      if (sort) params.append('sort', sort);
       return (await axios.get(`${API_URL}/api/products?${params}`)).data;
     },
   });
@@ -149,14 +158,38 @@ export default function HomePage() {
                 : 'All Products'
               }
             </h3>
-            <button
-              onClick={() => setShowFilters(!showFilters)}
-              className="flex items-center space-x-2 bg-white px-4 py-2 rounded-lg shadow-md hover:shadow-lg transition-shadow"
-            >
+            <button onClick={() => setShowFilters(!showFilters)} className="flex items-center space-x-2 bg-brand-600 text-white px-4 py-2 rounded-lg shadow-md hover:shadow-lg transition-shadow">
               <Filter className="w-4 h-4" />
               <span>Filters</span>
             </button>
           </div>
+
+          {showFilters && (
+            <div className="bg-white rounded-xl shadow-md p-4 mb-8 grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Price min</label>
+                <input value={priceMin} onChange={(e)=>setPriceMin(e.target.value)} type="number" step="0.01" className="w-full border rounded px-3 py-2" placeholder="0" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Price max</label>
+                <input value={priceMax} onChange={(e)=>setPriceMax(e.target.value)} type="number" step="0.01" className="w-full border rounded px-3 py-2" placeholder="1000" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Sort</label>
+                <select value={sort} onChange={(e)=>setSort(e.target.value as any)} className="w-full border rounded px-3 py-2">
+                  <option value="newest">Newest</option>
+                  <option value="price_asc">Price: Low to High</option>
+                  <option value="price_desc">Price: High to Low</option>
+                </select>
+              </div>
+              <div className="flex items-end">
+                <label className="inline-flex items-center gap-2 text-sm text-gray-700">
+                  <input type="checkbox" checked={onlyInStock} onChange={(e)=>setOnlyInStock(e.target.checked)} className="rounded" />
+                  Only in stock
+                </label>
+              </div>
+            </div>
+          )}
 
           {isLoading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">

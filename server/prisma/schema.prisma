@@ -1,4 +1,4 @@
-// This is your Prisma schema file,
+ // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
@@ -20,6 +20,8 @@ model User {
   updatedAt DateTime  @updatedAt
   orders    Order[]
   cartItems CartItem[]
+  reviews   Review[]
+  wishlist  WishlistItem[]
 }
 
 model Category {
@@ -37,6 +39,7 @@ model Product {
   description String
   price       Int       // cents
   imageUrl    String?
+  images      String?   // JSON array of additional image URLs
   categoryId  Int
   category    Category  @relation(fields: [categoryId], references: [id])
   stock       Int       @default(0)
@@ -45,6 +48,8 @@ model Product {
   updatedAt   DateTime  @updatedAt
   orderItems  OrderItem[]
   cartItems   CartItem[]
+  reviews     Review[]
+  wishedBy    WishlistItem[]
 }
 
 model Order {
@@ -92,4 +97,28 @@ enum OrderStatus {
   SHIPPED
   COMPLETED
   CANCELED
+}
+
+model Review {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  productId Int
+  rating    Int      @default(5)
+  comment   String?
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id])
+  product   Product  @relation(fields: [productId], references: [id])
+}
+
+model WishlistItem {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  productId Int
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id])
+  product   Product  @relation(fields: [productId], references: [id])
+
+  @@unique([userId, productId])
 }
