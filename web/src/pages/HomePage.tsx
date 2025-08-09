@@ -73,7 +73,8 @@ export default function HomePage() {
     searchParams.get('category') ? parseInt(searchParams.get('category')!) : null
   );
   const [showFilters, setShowFilters] = useState(false);
-  const productsRef = useRef<HTMLDivElement | null>(null);
+  const [isSearchActive, setIsSearchActive] = useState(false);
+  const searchContainerRef = useRef<HTMLDivElement | null>(null);
 
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
 
@@ -102,21 +103,25 @@ export default function HomePage() {
     },
   });
 
+  // Live suggestions for search dropdown
+  const { data: suggestions } = useQuery({
+    queryKey: ['search-suggest', searchTerm],
+    queryFn: async () => {
+      const params = new URLSearchParams();
+      params.append('search', searchTerm);
+      params.append('sort', 'newest');
+      const res = await axios.get(`${API_URL}/api/products?${params}`);
+      return Array.isArray(res.data) ? res.data.slice(0, 8) : [];
+    },
+    enabled: isSearchActive && searchTerm.trim().length > 0,
+  });
+
   useEffect(() => {
     const params = new URLSearchParams();
     if (searchTerm) params.append('search', searchTerm);
     if (selectedCategory) params.append('category', selectedCategory.toString());
     setSearchParams(params);
   }, [searchTerm, selectedCategory, setSearchParams]);
-
-  // Auto scroll to products when searching; scroll to top if cleared
-  useEffect(() => {
-    if (searchTerm.trim()) {
-      productsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    } else {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-  }, [searchTerm]);
 
   const handleSearch = (value: string) => {
     setSearchTerm(value);
@@ -142,6 +147,20 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+      {/* Backdrop when search active */}
+      <AnimatePresence>
+        {isSearchActive && (
+          <motion.div
+            key="backdrop"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-30 bg-black/40 backdrop-blur-sm"
+            onClick={() => setIsSearchActive(false)}
+          />
+        )}
+      </AnimatePresence>
+
       {/* Hero Section */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
@@ -161,17 +180,71 @@ export default function HomePage() {
             </p>
             
             {/* Search Bar */}
-            <div className="max-w-2xl mx-auto relative">
-              <div className="relative">
-                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                <input
-                  type="text"
-                  placeholder={t('searchForProducts')}
-                  value={searchTerm}
-                  onChange={(e) => handleSearch(e.target.value)}
-                  className="w-full pl-12 pr-4 py-4 text-lg text-gray-900 bg-white rounded-xl shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
+            <div className="max-w-2xl mx-auto relative z-40" ref={searchContainerRef}>
+              <motion.div
+                initial={false}
+                animate={isSearchActive ? { scale: 1.06, y: -2, boxShadow: '0 24px 60px rgba(0,0,0,0.35)' } : { scale: 1, y: 0, boxShadow: '0 0 0 rgba(0,0,0,0)' }}
+                transition={{ type: 'spring', stiffness: 260, damping: 22 }}
+                className="relative"
+              >
+                {/* Floating label that enlarges on focus */}
+                <motion.div
+                  initial={false}
+                  animate={isSearchActive ? { scale: 1.12, y: -18, opacity: 1 } : { scale: 1, y: 0, opacity: 0.75 }}
+                  transition={{ type: 'spring', stiffness: 260, damping: 20 }}
+                  className="pointer-events-none absolute left-4 -top-6 text-white/95 font-semibold"
+                  style={{ textShadow: '0 8px 24px rgba(0,0,0,0.35)' }}
+                >
+                  {t('searchForProducts')}
+                </motion.div>
+
+                <div className="relative">
+                  <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                  <input
+                    type="text"
+                    placeholder={isSearchActive ? '' : t('searchForProducts')}
+                    value={searchTerm}
+                    onFocus={() => setIsSearchActive(true)}
+                    onChange={(e) => handleSearch(e.target.value)}
+                    className="w-full pl-12 pr-4 py-4 text-lg text-gray-900 bg-white rounded-xl shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+
+                  {/* Suggestions dropdown */}
+                  <AnimatePresence>
+                    {isSearchActive && searchTerm.trim().length > 0 && (
+                      <motion.div
+                        key="suggestions"
+                        initial={{ opacity: 0, y: -6 }}
+                        animate={{ opacity: 1, y: 6 }}
+                        exit={{ opacity: 0, y: -6 }}
+                        className="absolute left-0 right-0 mt-2 bg-white rounded-xl shadow-2xl border border-gray-100 overflow-hidden"
+                      >
+                        {Array.isArray(suggestions) && suggestions.length > 0 ? (
+                          <ul className="max-h-96 overflow-auto">
+                            {suggestions.map((p: Product) => (
+                              <li
+                                key={p.id}
+                                className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 cursor-pointer"
+                                onMouseDown={(e) => e.preventDefault()}
+                                onClick={() => { setIsSearchActive(false); navigate(`/product/${p.id}`); }}
+                              >
+                                <img src={p.imageUrl} alt={p.name} className="w-12 h-12 rounded object-cover" />
+                                <div className="flex-1 min-w-0">
+                                  <div className="text-sm font-medium text-gray-900 truncate">{p.name}</div>
+                                  <div className="text-xs text-gray-500 truncate">{tnCategory(p.category?.name || '')}</div>
+                                </div>
+                                <div className="text-sm font-semibold text-gray-900">${p.price.toFixed(2)}</div>
+                              </li>
+                            ))}
+                          </ul>
+                        ) : (
+                          <div className="px-4 py-6 text-center text-sm text-gray-600">{t('noProductsFound')}</div>
+                        )}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              </motion.div>
             </div>
           </div>
         </div>
@@ -213,7 +286,7 @@ export default function HomePage() {
         </motion.div>
 
         {/* Products Section */}
-        <div ref={productsRef} className="mb-8">
+        <div className="mb-8">
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-2xl font-bold text-gray-900">
               {selectedCategory 
