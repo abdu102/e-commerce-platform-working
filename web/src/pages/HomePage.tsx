@@ -6,10 +6,11 @@ import { Search, ShoppingCart, Heart, Star, Filter } from 'lucide-react';
 import { useLanguage } from '../components/Language';
 
 function BannerSlider() {
+  const { t } = useLanguage();
   const slides = [
-    { id: 1, title: 'Summer Tech Sale', subtitle: 'Up to 40% off on top brands', color: 'from-pink-500 to-yellow-500', img: 'https://picsum.photos/seed/banner1/640/360', cta: 'Shop Deals' },
-    { id: 2, title: 'Back to School', subtitle: 'Laptops, tablets and accessories', color: 'from-blue-500 to-purple-500', img: 'https://picsum.photos/seed/banner2/640/360', cta: 'Browse Laptops' },
-    { id: 3, title: 'Pro Accessories', subtitle: 'Gear for creators and gamers', color: 'from-emerald-500 to-cyan-500', img: 'https://picsum.photos/seed/banner3/640/360', cta: 'Explore Accessories' },
+    { id: 1, title: t('summerTechSale'), subtitle: t('upTo40Off'), color: 'from-pink-500 to-yellow-500', img: 'https://picsum.photos/seed/banner1/640/360', cta: t('shopNow') },
+    { id: 2, title: t('backToSchool'), subtitle: t('laptopsAndMore'), color: 'from-blue-500 to-purple-500', img: 'https://picsum.photos/seed/banner2/640/360', cta: t('shopNow') },
+    { id: 3, title: t('proAccessories'), subtitle: t('gearForCreators'), color: 'from-emerald-500 to-cyan-500', img: 'https://picsum.photos/seed/banner3/640/360', cta: t('shopNow') },
   ];
   const [idx, setIdx] = useState(0);
   useEffect(() => {
@@ -65,7 +66,7 @@ interface Category {
 
 export default function HomePage() {
   const navigate = useNavigate();
-  const { t } = useLanguage();
+  const { t, tnCategory } = useLanguage();
   const [searchParams, setSearchParams] = useSearchParams();
   const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
   const [selectedCategory, setSelectedCategory] = useState<number | null>(
@@ -140,13 +141,13 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <h1 className="text-4xl md:text-6xl font-bold mb-6">
-              Discover Amazing
+              {t('discoverAmazing')}
               <span className="block text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-400">
-                Technology
+                {t('technology')}
               </span>
             </h1>
             <p className="text-xl md:text-2xl mb-8 text-blue-100">
-              Find the latest gadgets and electronics at unbeatable prices
+              {t('findTheLatestGadgets')}
             </p>
             
             {/* Search Bar */}
@@ -155,7 +156,7 @@ export default function HomePage() {
                 <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                 <input
                   type="text"
-                  placeholder="Search for products..."
+                  placeholder={t('searchForProducts')}
                   value={searchTerm}
                   onChange={(e) => handleSearch(e.target.value)}
                   className="w-full pl-12 pr-4 py-4 text-lg text-gray-900 bg-white rounded-xl shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -195,7 +196,7 @@ export default function HomePage() {
                     className="w-full h-full object-cover"
                   />
                 </div>
-                <span className="text-sm font-medium">{useLanguage().tnCategory(category.name)}</span>
+                <span className="text-sm font-medium">{tnCategory(category.name)}</span>
               </motion.button>
             ))}
           </div>
@@ -206,7 +207,7 @@ export default function HomePage() {
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-2xl font-bold text-gray-900">
               {selectedCategory 
-                ? categories?.find((c: any) => c.id === selectedCategory)?.name + ' '
+                ? tnCategory(categories?.find((c: any) => c.id === selectedCategory)?.name) + ' '
                 : t('allProducts')
               }
             </h3>
@@ -220,33 +221,33 @@ export default function HomePage() {
             <div className="bg-white rounded-xl shadow-md p-4 mb-8">
               <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-gray-600 mb-1">Min Price</label>
+                  <label className="block text-xs font-semibold text-gray-600 mb-1">{t('priceMin')}</label>
                   <div className="flex gap-2">
                     <input value={priceMin} onChange={(e)=>setPriceMin(e.target.value)} type="number" step="0.01" className="w-full border rounded px-3 py-2" placeholder="0" />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-gray-600 mb-1">Max Price</label>
+                  <label className="block text-xs font-semibold text-gray-600 mb-1">{t('priceMax')}</label>
                   <div className="flex gap-2">
                     <input value={priceMax} onChange={(e)=>setPriceMax(e.target.value)} type="number" step="0.01" className="w-full border rounded px-3 py-2" placeholder="1000" />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-gray-600 mb-1">Sort</label>
+                  <label className="block text-xs font-semibold text-gray-600 mb-1">{t('sort')}</label>
                   <select value={sort} onChange={(e)=>setSort(e.target.value as any)} className="w-full border rounded px-3 py-2">
-                    <option value="newest">Newest</option>
-                    <option value="price_asc">Price: Low to High</option>
-                    <option value="price_desc">Price: High to Low</option>
+                    <option value="newest">{t('newest')}</option>
+                    <option value="price_asc">{t('priceLowToHigh')}</option>
+                    <option value="price_desc">{t('priceHighToLow')}</option>
                   </select>
                 </div>
                 <div className="flex items-end">
                   <label className="inline-flex items-center gap-2 text-sm text-gray-700">
                     <input type="checkbox" checked={onlyInStock} onChange={(e)=>setOnlyInStock(e.target.checked)} className="rounded" />
-                    Only in stock
+                    {t('onlyInStock')}
                   </label>
                 </div>
                 <div className="flex items-end">
-                  <button onClick={()=>{setPriceMin('');setPriceMax('');setOnlyInStock(false);setSort('newest')}} className="px-4 py-2 text-sm rounded bg-gray-100 hover:bg-gray-200">Reset</button>
+                  <button onClick={()=>{setPriceMin('');setPriceMax('');setOnlyInStock(false);setSort('newest')}} className="px-4 py-2 text-sm rounded bg-gray-100 hover:bg-gray-200">{t('reset')}</button>
                 </div>
               </div>
             </div>
@@ -291,7 +292,7 @@ export default function HomePage() {
                         </button>
                         {product.stock < 10 && product.stock > 0 && (
                           <span className="absolute top-2 left-2 px-2 py-1 bg-red-500 text-white text-xs rounded-full">
-                            Only {product.stock} left
+                            {t('onlyLeftInStock', { stock: product.stock })}
                           </span>
                         )}
                       </div>
@@ -299,7 +300,7 @@ export default function HomePage() {
                       <div className="p-4">
                         <div className="flex items-center justify-between mb-2">
                           <span className="text-sm text-blue-600 font-medium">
-                            {product.category.name}
+                            {tnCategory(product.category.name)}
                           </span>
                           <div className="flex items-center text-yellow-400">
                             <Star className="w-3 h-3 fill-current" />
@@ -321,7 +322,7 @@ export default function HomePage() {
                           </span>
                           <button onClick={(e) => { e.stopPropagation(); navigate(`/product/${product.id}`); }} className="flex items-center space-x-1 bg-brand-600 hover:bg-brand-700 text-white px-3 py-2 rounded-lg transition-colors">
                             <ShoppingCart className="w-4 h-4" />
-                            <span className="text-sm">View</span>
+                            <span className="text-sm">{t('view')}</span>
                           </button>
                         </div>
                       </div>
@@ -337,9 +338,9 @@ export default function HomePage() {
                   <div className="w-24 h-24 mx-auto mb-4 bg-gray-200 rounded-full flex items-center justify-center">
                     <Search className="w-12 h-12 text-gray-400" />
                   </div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">No products found</h3>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-2">{t('noProductsFound')}</h3>
                   <p className="text-gray-600">
-                    Try adjusting your search terms or browse all categories
+                    {t('tryAdjustingYourSearchTerms')}
                   </p>
                 </motion.div>
               )}

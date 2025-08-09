@@ -7,6 +7,7 @@ import axios from 'axios';
 import { useAuth } from '../hooks/useAuth.tsx';
 import React from 'react';
 import { useToast } from '../components/Toast';
+import { useLanguage } from '../components/Language';
 
 interface Product {
   id: number;
@@ -28,6 +29,7 @@ export default function ProductPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { t, tnCategory } = useLanguage();
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
@@ -94,13 +96,13 @@ export default function ProductPage() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Product not found</h2>
-          <p className="text-gray-600 mb-4">Error: {(error as any)?.message || 'Product not found'}</p>
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">{t('productNotFound')}</h2>
+          <p className="text-gray-600 mb-4">Error: {(error as any)?.message || t('productNotFound')}</p>
           <button
             onClick={() => navigate('/')}
             className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-colors"
           >
-            Go back to home
+            {t('goBackToHome')}
           </button>
         </div>
       </div>
@@ -149,7 +151,7 @@ export default function ProductPage() {
             className="flex items-center text-gray-600 hover:text-blue-600 transition-colors"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Back
+            {t('back')}
           </button>
         </motion.div>
 
@@ -190,13 +192,13 @@ export default function ProductPage() {
             {/* Category */}
             <div className="flex items-center space-x-2">
               <span className="px-3 py-1 bg-blue-100 text-blue-800 text-sm font-medium rounded-full">
-                {categoryName}
+                {tnCategory(categoryName)}
               </span>
               <div className="flex items-center text-yellow-400">
                 {[...Array(5)].map((_, i) => (
                   <Star key={i} className="w-4 h-4 fill-current" />
                 ))}
-                <span className="ml-2 text-sm text-gray-600">({(reviews as any)?.length || 0} reviews)</span>
+                <span className="ml-2 text-sm text-gray-600">({(reviews as any)?.length || 0} {t('reviews')})</span>
               </div>
             </div>
 
@@ -210,7 +212,7 @@ export default function ProductPage() {
               </span>
               {effectiveStock < 10 && effectiveStock > 0 && (
                 <span className="px-3 py-1 bg-orange-100 text-orange-800 text-sm font-medium rounded-full">
-                  Only {effectiveStock} left in stock
+                  {t('onlyLeftInStock', { stock: effectiveStock })}
                 </span>
               )}
             </div>
@@ -223,7 +225,7 @@ export default function ProductPage() {
               <div className="space-y-3">
                 {variantOptions.colors.length > 0 && (
                   <div>
-                    <div className="text-sm font-medium text-gray-700 mb-1">Color</div>
+                    <div className="text-sm font-medium text-gray-700 mb-1">{t('selectColor')}</div>
                     <div className="flex flex-wrap gap-2">
                       {variantOptions.colors.map((c) => (
                         <button key={c} onClick={()=>setSelectedColor(c)} className={`px-3 py-1.5 rounded-full border ${selectedColor===c?'border-blue-600 bg-blue-50':'border-gray-300'}`}>{c}</button>
@@ -233,7 +235,7 @@ export default function ProductPage() {
                 )}
                 {variantOptions.sizes.length > 0 && (
                   <div>
-                    <div className="text-sm font-medium text-gray-700 mb-1">Size</div>
+                    <div className="text-sm font-medium text-gray-700 mb-1">{t('selectSize')}</div>
                     <div className="flex flex-wrap gap-2">
                       {variantOptions.sizes.map((s) => (
                         <button key={s} onClick={()=>setSelectedSize(s)} className={`px-3 py-1.5 rounded-full border ${selectedSize===s?'border-blue-600 bg-blue-50':'border-gray-300'}`}>{s}</button>
@@ -249,14 +251,14 @@ export default function ProductPage() {
               <div className="flex items-center space-x-2">
                 <div className={`w-3 h-3 rounded-full ${effectiveStock > 0 ? 'bg-green-500' : 'bg-red-500'}`}></div>
                 <span className="text-sm text-gray-600">
-                  {effectiveStock > 0 ? `${effectiveStock} in stock` : 'Out of stock'}
+                  {effectiveStock > 0 ? `${effectiveStock} ${t('inStock')}` : t('outOfStock')}
                 </span>
               </div>
             </div>
 
             {/* Quantity Selector */}
             <div className="space-y-4">
-              <label className="block text-sm font-medium text-gray-700">Quantity</label>
+              <label className="block text-sm font-medium text-gray-700">{t('quantity')}</label>
               <div className="flex items-center space-x-4">
                 <div className="flex items-center border border-gray-300 rounded-lg">
                   <button
@@ -275,7 +277,7 @@ export default function ProductPage() {
                     <Plus className="w-4 h-4" />
                   </button>
                 </div>
-                <span className="text-sm text-gray-600">{effectiveStock} available</span>
+                <span className="text-sm text-gray-600">{effectiveStock} {t('available')}</span>
               </div>
             </div>
 
@@ -288,7 +290,7 @@ export default function ProductPage() {
                 disabled={stockNumber === 0}
                 className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Buy Now - ${(priceNumber * quantity).toFixed(2)}
+                {t('buyNow')} - ${(priceNumber * quantity).toFixed(2)}
               </motion.button>
 
               <div className="grid grid-cols-2 gap-4">
@@ -304,7 +306,7 @@ export default function ProductPage() {
                   ) : (
                     <ShoppingCart className="w-5 h-5" />
                   )}
-                  <span>Add to Cart</span>
+                  <span>{t('addToCart')}</span>
                 </motion.button>
 
                 <motion.button
@@ -314,7 +316,7 @@ export default function ProductPage() {
                   className="flex items-center justify-center space-x-2 bg-white border-2 border-gray-300 text-gray-600 hover:bg-gray-50 font-semibold py-3 px-6 rounded-xl transition-all duration-200"
                 >
                   <Heart className="w-5 h-5" />
-                  <span>Wishlist</span>
+                  <span>{t('wishlist')}</span>
                 </motion.button>
               </div>
             </div>
@@ -324,22 +326,22 @@ export default function ProductPage() {
               <div className="flex items-center space-x-3">
                 <Truck className="w-6 h-6 text-blue-600" />
                 <div>
-                  <div className="font-medium text-gray-900">Free Shipping</div>
-                  <div className="text-sm text-gray-600">On orders over $50</div>
+                  <div className="font-medium text-gray-900">{t('freeShipping')}</div>
+                  <div className="text-sm text-gray-600">{t('onOrdersOver')}</div>
                 </div>
               </div>
               <div className="flex items-center space-x-3">
                 <Shield className="w-6 h-6 text-green-600" />
                 <div>
-                  <div className="font-medium text-gray-900">Secure Payment</div>
-                  <div className="text-sm text-gray-600">100% secure checkout</div>
+                  <div className="font-medium text-gray-900">{t('securePayment')}</div>
+                  <div className="text-sm text-gray-600">{t('secureCheckout')}</div>
                 </div>
               </div>
               <div className="flex items-center space-x-3">
                 <div className="w-6 h-6 text-purple-600">🔄</div>
                 <div>
-                  <div className="font-medium text-gray-900">Easy Returns</div>
-                  <div className="text-sm text-gray-600">30 day return policy</div>
+                  <div className="font-medium text-gray-900">{t('easyReturns')}</div>
+                  <div className="text-sm text-gray-600">{t('returnPolicy')}</div>
                 </div>
               </div>
             </div>
@@ -353,7 +355,7 @@ export default function ProductPage() {
             animate={{ opacity: 1, y: 0 }}
             className="mt-16"
           >
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Specifications</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">{t('specifications')}</h2>
             <div className="bg-white rounded-2xl shadow-lg p-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {Object.entries(specs).map(([key, value]) => (
@@ -369,13 +371,13 @@ export default function ProductPage() {
 
         {/* Q&A */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mt-16">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Questions & Answers</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">{t('questionsAndAnswers')}</h2>
           <QnaSection productId={Number(id)} />
         </motion.div>
 
         {/* Reviews */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mt-16">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Reviews</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">{t('reviews')}</h2>
           <div className="bg-white rounded-2xl shadow-lg p-6 space-y-4">
             {(reviews || []).map((r: any) => (
               <div key={r.id} className="border-b last:border-b-0 pb-4">
@@ -410,6 +412,7 @@ function ReviewForm({ productId, onSubmitted }: { productId: number; onSubmitted
   const [photos, setPhotos] = useState<string[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
+  const { t } = useLanguage();
 
   const handleFiles = (files: FileList | null) => {
     if (!files) return;
@@ -443,25 +446,26 @@ function ReviewForm({ productId, onSubmitted }: { productId: number; onSubmitted
   return (
     <form onSubmit={submit} className="mt-4 border-t pt-4">
       <div className="flex items-center gap-3 mb-2">
-        <span className="text-sm text-gray-700">Your Rating:</span>
+        <span className="text-sm text-gray-700">{t('yourRating')}:</span>
         <div className="flex gap-1 text-yellow-500">
           {[1,2,3,4,5].map((n) => (
             <button type="button" key={n} onClick={()=>setRating(n)} className={n<=rating?'':'opacity-40'}>★</button>
           ))}
         </div>
       </div>
-      <textarea value={comment} onChange={(e)=>setComment(e.target.value)} placeholder="Write your review..." className="w-full border rounded px-3 py-2 mb-2" />
+      <textarea value={comment} onChange={(e)=>setComment(e.target.value)} placeholder={t('yourComment')} className="w-full border rounded px-3 py-2 mb-2" />
       <input type="file" accept="image/*" multiple onChange={(e)=>handleFiles(e.target.files)} className="mb-2" />
       <div className="flex gap-2 mb-2">
         {photos.map((p, i)=> (<img key={i} src={p} className="w-16 h-16 object-cover rounded" />))}
       </div>
-      <button type="submit" disabled={submitting} className="px-4 py-2 bg-blue-600 text-white rounded disabled:opacity-50">{submitting?'Submitting...':'Submit Review'}</button>
+      <button type="submit" disabled={submitting} className="px-4 py-2 bg-blue-600 text-white rounded disabled:opacity-50">{submitting?t('processing'):t('submitReview')}</button>
     </form>
   );
 }
 
 function QnaSection({ productId }: { productId: number }) {
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
+  const { t } = useLanguage();
   const { data, refetch } = useQuery({
     queryKey: ['qna', productId],
     queryFn: async () => (await axios.get(`${API_URL}/api/qna/${productId}`)).data,
@@ -477,8 +481,8 @@ function QnaSection({ productId }: { productId: number }) {
   return (
     <div className="bg-white rounded-2xl shadow-lg p-6 space-y-4">
       <form onSubmit={ask} className="flex gap-2">
-        <input value={question} onChange={(e)=>setQuestion(e.target.value)} placeholder="Ask a question..." className="flex-1 border rounded px-3 py-2" />
-        <button className="px-4 py-2 bg-blue-600 text-white rounded">Ask</button>
+        <input value={question} onChange={(e)=>setQuestion(e.target.value)} placeholder={t('askAQuestion')} className="flex-1 border rounded px-3 py-2" />
+        <button className="px-4 py-2 bg-blue-600 text-white rounded">{t('askAQuestion')}</button>
       </form>
       {(data || []).map((q: any) => (
         <div key={q.id} className="border-b last:border-b-0 pb-4">
