@@ -22,6 +22,8 @@ model User {
   cartItems CartItem[]
   reviews   Review[]
   wishlist  WishlistItem[]
+  questions Question[]
+  answers   Answer[]
 }
 
 model Category {
@@ -44,12 +46,14 @@ model Product {
   category    Category  @relation(fields: [categoryId], references: [id])
   stock       Int       @default(0)
   specs       String?   // JSON string for specifications
+  variants    Variant[]
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
   orderItems  OrderItem[]
   cartItems   CartItem[]
   reviews     Review[]
   wishedBy    WishlistItem[]
+  questions   Question[]
 }
 
 model Order {
@@ -105,10 +109,45 @@ model Review {
   productId Int
   rating    Int      @default(5)
   comment   String?
+  photos    String?  // JSON array of image URLs/base64
   createdAt DateTime @default(now())
 
   user      User     @relation(fields: [userId], references: [id])
   product   Product  @relation(fields: [productId], references: [id])
+}
+
+model Variant {
+  id         Int      @id @default(autoincrement())
+  productId  Int
+  color      String?
+  size       String?
+  stock      Int      @default(0)
+  priceDelta Int?     // cents to add/subtract from base price
+
+  product    Product  @relation(fields: [productId], references: [id])
+}
+
+model Question {
+  id         Int      @id @default(autoincrement())
+  userId     Int
+  productId  Int
+  content    String
+  createdAt  DateTime @default(now())
+  answers    Answer[]
+
+  user       User     @relation(fields: [userId], references: [id])
+  product    Product  @relation(fields: [productId], references: [id])
+}
+
+model Answer {
+  id         Int      @id @default(autoincrement())
+  questionId Int
+  userId     Int
+  content    String
+  createdAt  DateTime @default(now())
+
+  question   Question @relation(fields: [questionId], references: [id])
+  user       User     @relation(fields: [userId], references: [id])
 }
 
 model WishlistItem {
