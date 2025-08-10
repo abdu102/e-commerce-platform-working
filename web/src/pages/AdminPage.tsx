@@ -96,8 +96,20 @@ export default function AdminPage() {
 
   const deleteUserMutation = useMutation({
     mutationFn: async (userId: number) => axios.delete(`${API_URL}/api/users/${userId}`),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['users'] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+      toast.success('User deleted');
+    },
+    onError: () => {
+      toast.error('Failed to delete user');
+    }
   });
+
+  const handleDeleteUser = (id: number) => {
+    if (confirm('Are you sure you want to delete this user?')) {
+      deleteUserMutation.mutate(id);
+    }
+  };
   const createAdminMutation = useMutation({
     mutationFn: async ({ name, email, password }: { name: string; email: string; password: string }) => {
       // create user via register then elevate to ADMIN
@@ -646,7 +658,7 @@ export default function AdminPage() {
                                 >
                                   <Edit className="w-4 h-4" />
                                 </button>
-                                <button onClick={() => deleteUserMutation.mutate(user.id)} className="text-red-600 hover:text-red-900 mr-3">
+                                <button onClick={() => handleDeleteUser(user.id)} className="text-red-600 hover:text-red-900 mr-3">
                                   <Trash2 className="w-4 h-4" />
                                 </button>
                               </>
@@ -740,7 +752,18 @@ export default function AdminPage() {
                           <td className="px-6 py-4 whitespace-nowrap">{u.name}</td>
                           <td className="px-6 py-4 whitespace-nowrap">{u.email}</td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                            <button onClick={() => deleteUserMutation.mutate(u.id)} className="text-red-600 hover:text-red-900">Delete</button>
+                            <div className="flex items-center gap-3">
+                              <button
+                                onClick={() => {
+                                  setEditingUser(u);
+                                  setEditUserForm({ name: u.name, email: u.email, password: '' });
+                                }}
+                                className="text-green-600 hover:text-green-800"
+                              >
+                                Edit
+                              </button>
+                              <button onClick={() => handleDeleteUser(u.id)} className="text-red-600 hover:text-red-900">Delete</button>
+                            </div>
                           </td>
                         </tr>
                       ))}
