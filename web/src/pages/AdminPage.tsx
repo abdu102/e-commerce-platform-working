@@ -91,6 +91,8 @@ export default function AdminPage() {
   const [editingOrder, setEditingOrder] = useState<Order | null>(null);
   const [showCreateAdmin, setShowCreateAdmin] = useState(false);
   const [newAdmin, setNewAdmin] = useState({ name: '', email: '', password: '' });
+  const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [editUserForm, setEditUserForm] = useState({ name: '', email: '', password: '' });
 
   const deleteUserMutation = useMutation({
     mutationFn: async (userId: number) => axios.delete(`${API_URL}/api/users/${userId}`),
@@ -195,6 +197,17 @@ export default function AdminPage() {
     mutationFn: async ({ userId, role }: { userId: number; role: User['role'] }) => axios.patch(`${API_URL}/api/users/${userId}/role`, { role }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
+    },
+  });
+
+  const updateUserInfoMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: number; data: { name?: string; email?: string; password?: string } }) =>
+      axios.patch(`${API_URL}/api/users/${id}`, data),
+    onSuccess: () => {
+      toast.success('User updated');
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+      setEditingUser(null);
+      setEditUserForm({ name: '', email: '', password: '' });
     },
   });
 
@@ -624,14 +637,11 @@ export default function AdminPage() {
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                             {currentUser?.role === 'SUPER_ADMIN' && (
                               <>
-                                <button 
-                                  onClick={async () => {
-                                    const name = prompt('Name', user.name) || user.name;
-                                    const email = prompt('Email', user.email) || user.email;
-                                    await axios.patch(`${API_URL}/api/users/${user.id}`, { name, email });
-                                    toast.success('User updated');
-                                    queryClient.invalidateQueries({ queryKey: ['users'] });
-                                  }} 
+                                <button
+                                  onClick={() => {
+                                    setEditingUser(user);
+                                    setEditUserForm({ name: user.name, email: user.email, password: '' });
+                                  }}
                                   className="text-green-600 hover:text-green-900 mr-3"
                                 >
                                   <Edit className="w-4 h-4" />
@@ -1139,6 +1149,46 @@ export default function AdminPage() {
                 <div className="flex justify-end space-x-4 pt-2">
                   <button type="button" onClick={() => setShowCreateAdmin(false)} className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50">Cancel</button>
                   <button type="submit" className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg">Create</button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+
+        {/* Edit User Modal */}
+        {editingUser && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="bg-white rounded-xl p-6 w-full max-w-md mx-4">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-bold text-gray-900">Edit User</h2>
+                <button onClick={() => setEditingUser(null)} className="text-gray-400 hover:text-gray-600"><X className="w-6 h-6" /></button>
+              </div>
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  updateUserInfoMutation.mutate({ id: editingUser.id, data: {
+                    name: editUserForm.name.trim() || undefined,
+                    email: editUserForm.email.trim() || undefined,
+                    password: editUserForm.password.trim() || undefined,
+                  }});
+                }}
+                className="space-y-4"
+              >
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Name</label>
+                  <input value={editUserForm.name} onChange={(e)=>setEditUserForm(prev=>({...prev, name: e.target.value}))} className="w-full px-3 py-2 border rounded" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                  <input type="email" value={editUserForm.email} onChange={(e)=>setEditUserForm(prev=>({...prev, email: e.target.value}))} className="w-full px-3 py-2 border rounded" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">New Password (optional)</label>
+                  <input type="password" value={editUserForm.password} onChange={(e)=>setEditUserForm(prev=>({...prev, password: e.target.value}))} className="w-full px-3 py-2 border rounded" />
+                </div>
+                <div className="flex justify-end space-x-4 pt-2">
+                  <button type="button" onClick={() => setEditingUser(null)} className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50">Cancel</button>
+                  <button type="submit" className="px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg">Save</button>
                 </div>
               </form>
             </motion.div>
