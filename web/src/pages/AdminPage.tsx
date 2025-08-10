@@ -987,17 +987,21 @@ export default function AdminPage() {
                 onSubmit={async (e) => {
                   e.preventDefault();
                   const form = new FormData(e.target as HTMLFormElement);
+                  const priceVal = parseFloat(form.get('price') as string);
+                  const stockVal = parseInt(form.get('stock') as string);
                   const data: any = {
                     name: form.get('name') as string,
                     description: form.get('description') as string,
-                    price: parseFloat(form.get('price') as string),
-                    stock: parseInt(form.get('stock') as string),
+                    price: isNaN(priceVal) ? undefined : priceVal,
+                    stock: isNaN(stockVal) ? undefined : stockVal,
                     imageUrl: (form.get('imageUrl') as string) || editingProductImagePreview || undefined,
                     categoryId: parseInt((form.get('categoryId') as string) || `${editingProduct.category?.id || ''}`) || undefined,
                   };
-                  const specsText = form.get('specs') as string;
-                  if (specsText) {
-                    try { data.specs = JSON.parse(specsText); } catch {}
+                  const specsText = (form.get('specs') as string) || '';
+                  if (specsText.trim()) {
+                    // keep as string, backend expects string; optionally validate JSON
+                    try { JSON.parse(specsText); } catch {}
+                    data.specs = specsText;
                   }
                   await updateProductMutation.mutateAsync({ id: editingProduct.id, data });
                   toast.success('Product saved');
