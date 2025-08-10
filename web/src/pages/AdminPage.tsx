@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import axios from 'axios';
 import { useToast } from '../components/Toast';
+import Confirm from '../components/Confirm';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
 
@@ -93,6 +94,7 @@ export default function AdminPage() {
   const [newAdmin, setNewAdmin] = useState({ name: '', email: '', password: '' });
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [editUserForm, setEditUserForm] = useState({ name: '', email: '', password: '' });
+  const [confirmState, setConfirmState] = useState<{ open: boolean; id?: number; label?: string }>({ open: false });
 
   const deleteUserMutation = useMutation({
     mutationFn: async (userId: number) => axios.delete(`${API_URL}/api/users/${userId}`),
@@ -106,9 +108,7 @@ export default function AdminPage() {
   });
 
   const handleDeleteUser = (id: number) => {
-    if (confirm('Are you sure you want to delete this user?')) {
-      deleteUserMutation.mutate(id);
-    }
+    setConfirmState({ open: true, id, label: 'Delete this user? This action cannot be undone.' });
   };
   const createAdminMutation = useMutation({
     mutationFn: async ({ name, email, password }: { name: string; email: string; password: string }) => {
@@ -938,6 +938,19 @@ export default function AdminPage() {
             </motion.div>
           </div>
         )}
+
+        <Confirm
+          open={confirmState.open}
+          title="Confirm deletion"
+          description={confirmState.label}
+          confirmLabel="Delete"
+          cancelLabel="Cancel"
+          onCancel={() => setConfirmState({ open: false })}
+          onConfirm={() => {
+            if (confirmState.id) deleteUserMutation.mutate(confirmState.id);
+            setConfirmState({ open: false });
+          }}
+        />
 
         {/* Create Category Modal */}
         {showCreateCategory && (
