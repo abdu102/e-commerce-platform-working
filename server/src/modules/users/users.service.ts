@@ -63,6 +63,22 @@ export class UsersService {
   }
 
   async deleteUser(userId: number) {
+    // Remove dependent records first to satisfy FK constraints
+    await this.prisma.$transaction([
+      // Order items belonging to user's orders
+      this.prisma.orderItem.deleteMany({ where: { order: { userId } } }),
+      // Orders
+      this.prisma.order.deleteMany({ where: { userId } }),
+      // Cart items
+      this.prisma.cartItem.deleteMany({ where: { userId } }),
+      // Wishlist
+      this.prisma.wishlistItem.deleteMany({ where: { userId } }),
+      // Reviews
+      this.prisma.review.deleteMany({ where: { userId } }),
+      // Q&A
+      this.prisma.answer.deleteMany({ where: { userId } }),
+      this.prisma.question.deleteMany({ where: { userId } }),
+    ]);
     return this.prisma.user.delete({ where: { id: userId } });
   }
 
