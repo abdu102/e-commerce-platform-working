@@ -127,6 +127,15 @@ export default function AdminPage() {
     queryFn: async () => (await axios.get(`${API_URL}/api/categories`)).data,
   });
 
+  const updateCategoryMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: number; data: any }) => axios.put(`${API_URL}/api/categories/${id}`, data),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['categories'] }),
+  });
+  const deleteCategoryMutation = useMutation({
+    mutationFn: async (id: number) => axios.delete(`${API_URL}/api/categories/${id}`),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['categories'] }),
+  });
+
   // Category create modal state
   const [showCreateCategory, setShowCreateCategory] = useState(false);
   const [createCategoryData, setCreateCategoryData] = useState({
@@ -518,6 +527,7 @@ export default function AdminPage() {
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Image</th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Products</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
@@ -536,6 +546,27 @@ export default function AdminPage() {
                             <div className="text-sm font-medium text-gray-900">{c.name}</div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{Array.isArray(c.products) ? c.products.length : 0}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm">
+                            <div className="flex items-center gap-2">
+                              <button
+                                onClick={async () => {
+                                  const name = prompt('New category name', c.name) || c.name;
+                                  const imageUrl = prompt('Image URL', c.imageUrl || '') || c.imageUrl;
+                                  await updateCategoryMutation.mutateAsync({ id: c.id, data: { name, imageUrl } });
+                                  toast.success('Category updated');
+                                }}
+                                className="text-green-600 hover:text-green-800"
+                              >
+                                Edit
+                              </button>
+                              <button
+                                onClick={() => deleteCategoryMutation.mutate(c.id)}
+                                className="text-red-600 hover:text-red-800"
+                              >
+                                Delete
+                              </button>
+                            </div>
+                          </td>
                         </tr>
                       ))}
                     </tbody>
@@ -592,19 +623,25 @@ export default function AdminPage() {
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                             {currentUser?.role === 'SUPER_ADMIN' && (
-                              <button 
-                                onClick={() => {
-                                  // Add edit user functionality here
-                                  console.log('Edit user:', user);
-                                }} 
-                                className="text-green-600 hover:text-green-900 mr-2"
-                              >
-                                <Edit className="w-4 h-4" />
-                              </button>
+                              <>
+                                <button 
+                                  onClick={async () => {
+                                    const name = prompt('Name', user.name) || user.name;
+                                    const email = prompt('Email', user.email) || user.email;
+                                    await axios.patch(`${API_URL}/api/users/${user.id}`, { name, email });
+                                    toast.success('User updated');
+                                    queryClient.invalidateQueries({ queryKey: ['users'] });
+                                  }} 
+                                  className="text-green-600 hover:text-green-900 mr-3"
+                                >
+                                  <Edit className="w-4 h-4" />
+                                </button>
+                                <button onClick={() => deleteUserMutation.mutate(user.id)} className="text-red-600 hover:text-red-900 mr-3">
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              </>
                             )}
-                            <button className="text-blue-600 hover:text-blue-900">
-                              <Eye className="w-4 h-4" />
-                            </button>
+                            <button className="text-blue-600 hover:text-blue-900"><Eye className="w-4 h-4" /></button>
                           </td>
                         </tr>
                       ))}

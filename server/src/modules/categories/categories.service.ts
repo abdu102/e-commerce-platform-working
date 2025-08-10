@@ -42,6 +42,14 @@ export class CategoriesService {
   async create(data: { name: string; imageUrl?: string }) {
     return this.prisma.category.create({ data });
   }
+
+  async update(id: number, data: { name?: string; imageUrl?: string }) {
+    return this.prisma.category.update({ where: { id }, data });
+  }
+
+  async remove(id: number) {
+    return this.prisma.category.delete({ where: { id } });
+  }
 }
 
 
