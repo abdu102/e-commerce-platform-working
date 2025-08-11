@@ -11,11 +11,15 @@ export class AuthService {
   ) {}
 
   async register(data: { name: string; email: string; password: string }) {
-    // Email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(data.email)) {
+    // Normalize and validate email (be permissive to avoid false negatives on mobile keyboards)
+    const normalizedEmail = String(data.email || '').trim().toLowerCase();
+    // Very lenient check: must contain a single '@' and a dot after it
+    const atIndex = normalizedEmail.indexOf('@');
+    const dotIndex = normalizedEmail.lastIndexOf('.');
+    if (atIndex <= 0 || dotIndex <= atIndex + 1 || dotIndex === normalizedEmail.length - 1) {
       throw new BadRequestException('Invalid email format');
     }
+    data.email = normalizedEmail;
 
     // Password validation
     if (data.password.length < 6) {

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, UseGuards, Req } from '@nestjs/common';
 import { ReviewsService } from '../../reviews/reviews.service';
 import { JwtAuthGuard } from '../../auth/jwt-auth.guard';
 import { ReviewDto } from '../dto/v2.dto';
@@ -14,7 +14,7 @@ export class ReviewsV2Controller {
     return list.map((r: any) => ({
       id: String(r.id),
       productId: String(r.productId),
-      author: r.author || null,
+      author: (r.user?.name as string) || null,
       rating: r.rating,
       comment: r.comment,
       createdAt: r.createdAt,
@@ -23,8 +23,8 @@ export class ReviewsV2Controller {
 
   @UseGuards(JwtAuthGuard)
   @Post(':productId')
-  async create(@Param('productId') productId: string, @Body() body: ReviewDto) {
-    const created = await this.reviews.create((null as any), { productId: Number(productId), rating: body.rating, comment: body.comment });
-    return { id: String(created.id), productId: String(created.productId), author: created.author || null, rating: created.rating, comment: created.comment, createdAt: created.createdAt };
+  async create(@Req() req: any, @Param('productId') productId: string, @Body() body: ReviewDto) {
+    const created = await this.reviews.create(req.user.sub, { productId: Number(productId), rating: body.rating, comment: body.comment });
+    return { id: String(created.id), productId: String(created.productId), author: req.user.email || null, rating: created.rating, comment: created.comment, createdAt: created.createdAt };
   }
 }
