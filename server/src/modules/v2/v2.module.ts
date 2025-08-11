@@ -1,4 +1,10 @@
 import { Module } from '@nestjs/common';
+import { AuthModule } from '../../modules/auth/auth.module';
+import { ProductsModule } from '../../modules/products/products.module';
+import { CategoriesModule } from '../../modules/categories/categories.module';
+import { CartModule } from '../../modules/cart/cart.module';
+import { OrdersModule } from '../../modules/orders/orders.module';
+import { ReviewsModule } from '../../modules/reviews/reviews.module';
 import { AuthV2Controller } from './auth/auth.v2.controller';
 import { ProductsV2Controller } from './catalog/products.v2.controller';
 import { CategoriesV2Controller } from './catalog/categories.v2.controller';
@@ -7,6 +13,7 @@ import { OrdersV2Controller } from './orders/orders.v2.controller';
 import { ReviewsV2Controller } from './reviews/reviews.v2.controller';
 
 @Module({
+  imports: [AuthModule, ProductsModule, CategoriesModule, CartModule, OrdersModule, ReviewsModule],
   controllers: [
     AuthV2Controller,
     ProductsV2Controller,
