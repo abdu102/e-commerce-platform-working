@@ -10,6 +10,8 @@ import { join } from 'path';
 async function bootstrap() {
   try {
     console.log('[SERVER] Starting NestJS application...');
+    console.log('[SERVER] Environment:', process.env.NODE_ENV || 'development');
+    console.log('[SERVER] Port:', process.env.PORT || 4000);
     
     const app = await NestFactory.create(AppModule, { cors: true });
     app.use(helmet());
@@ -20,17 +22,30 @@ async function bootstrap() {
     const clientDir = join(__dirname, '../../web/dist');
     const server = app.getHttpAdapter().getInstance();
     
-    // Health check endpoint on Express instance
+    // Health check endpoint on Express instance - register BEFORE other middleware
     server.get('/health', (req: express.Request, res: express.Response) => {
-      console.log('[HEALTH] Health check requested');
+      console.log('[HEALTH] Health check requested from:', req.ip || req.connection.remoteAddress);
+      res.setHeader('Content-Type', 'application/json');
       res.status(200).json({ 
         status: 'ok', 
         timestamp: new Date().toISOString(),
-        uptime: process.uptime()
+        uptime: process.uptime(),
+        environment: process.env.NODE_ENV || 'development',
+        port: process.env.PORT || 4000
       });
     });
 
-    console.log('[SERVER] Health check route registered at /health');
+    // Also add a root health check for Railway
+    server.get('/', (req: express.Request, res: express.Response) => {
+      console.log('[HEALTH] Root health check requested');
+      res.status(200).json({ 
+        status: 'ok', 
+        message: 'Server is running',
+        timestamp: new Date().toISOString()
+      });
+    });
+
+    console.log('[SERVER] Health check routes registered at /health and /');
     server.use(express.static(clientDir));
 
     // SPA fallback: send index.html for non-API routes so refresh works
@@ -42,6 +57,16 @@ async function bootstrap() {
     await app.listen(port, '0.0.0.0');
     console.log(`[SERVER] ✅ API listening on http://localhost:${port}`);
     console.log(`[SERVER] ✅ Health check available at http://localhost:${port}/health`);
+    console.log(`[SERVER] ✅ Root health check available at http://localhost:${port}/`);
+    
+    // Test health check immediately after startup
+    setTimeout(() => {
+      console.log('[SERVER] 🔍 Testing health check endpoint...');
+      fetch(`http://localhost:${port}/health`)
+        .then(response => response.json())
+        .then(data => console.log('[SERVER] ✅ Health check test successful:', data))
+        .catch(err => console.error('[SERVER] ❌ Health check test failed:', err));
+    }, 1000);
     
   } catch (error) {
     console.error('[SERVER] ❌ Failed to start server:', error);
