@@ -1,0 +1,19 @@
+import { Module } from '@nestjs/common';
+import { AuthV2Controller } from './auth/auth.v2.controller';
+import { ProductsV2Controller } from './catalog/products.v2.controller';
+import { CategoriesV2Controller } from './catalog/categories.v2.controller';
+import { CartV2Controller } from './cart/cart.v2.controller';
+import { OrdersV2Controller } from './orders/orders.v2.controller';
+import { ReviewsV2Controller } from './reviews/reviews.v2.controller';
+
+@Module({
+  controllers: [
+    AuthV2Controller,
+    ProductsV2Controller,
+    CategoriesV2Controller,
+    CartV2Controller,
+    OrdersV2Controller,
+    ReviewsV2Controller,
+  ],
+})
+export class V2Module {}
