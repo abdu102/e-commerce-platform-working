@@ -16,8 +16,12 @@ async function bootstrap() {
     app.use(cors());
     app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
 
-    // Health check endpoint at NestJS level
-    app.get('/health', (req, res) => {
+    // Serve SPA static assets
+    const clientDir = join(__dirname, '../../web/dist');
+    const server = app.getHttpAdapter().getInstance();
+    
+    // Health check endpoint on Express instance
+    server.get('/health', (req: express.Request, res: express.Response) => {
       console.log('[HEALTH] Health check requested');
       res.status(200).json({ 
         status: 'ok', 
@@ -27,10 +31,6 @@ async function bootstrap() {
     });
 
     console.log('[SERVER] Health check route registered at /health');
-
-    // Serve SPA static assets
-    const clientDir = join(__dirname, '../../web/dist');
-    const server = app.getHttpAdapter().getInstance();
     server.use(express.static(clientDir));
 
     // SPA fallback: send index.html for non-API routes so refresh works
