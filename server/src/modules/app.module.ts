@@ -11,6 +11,7 @@ import { UsersModule } from './users/users.module';
 import { ReviewsModule } from './reviews/reviews.module';
 import { WishlistModule } from './wishlist/wishlist.module';
 import { QnaModule } from './qna/qna.module';
+import { V2Module } from './v2/v2.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { QnaModule } from './qna/qna.module';
     ReviewsModule,
     WishlistModule,
     QnaModule,
+    V2Module,
   ],
   controllers: [AppController],
 })
