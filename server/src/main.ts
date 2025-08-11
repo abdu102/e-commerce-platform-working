@@ -16,6 +16,7 @@ async function bootstrap() {
   // Serve SPA static assets
   const clientDir = join(__dirname, '../../web/dist');
   const server = app.getHttpAdapter().getInstance();
+  server.get('/health', (_req: any, res: any) => res.status(200).json({ status: 'ok' }));
   server.use(express.static(clientDir));
 
   // SPA fallback: send index.html for non-API routes so refresh works
