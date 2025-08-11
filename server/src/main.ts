@@ -99,7 +99,9 @@ async function bootstrap() {
     
   } catch (error) {
     console.error('[SERVER] ❌ Failed to start server:', error);
-    console.error('[SERVER] ❌ Error stack:', error.stack);
+    if (error instanceof Error) {
+      console.error('[SERVER] ❌ Error stack:', error.stack);
+    }
     process.exit(1);
   }
 }
