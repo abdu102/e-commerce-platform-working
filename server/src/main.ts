@@ -28,6 +28,8 @@ async function bootstrap() {
     // Simple health check that responds immediately (for Railway)
     server.get('/health', (req: express.Request, res: express.Response) => {
       console.log('[HEALTH] Health check requested - responding immediately');
+      res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
       res.status(200).send('OK');
     });
 
@@ -91,9 +93,9 @@ async function bootstrap() {
       fetch(`http://localhost:${port}/health`)
         .then(response => {
           console.log(`[SERVER] ✅ Health check test response status: ${response.status}`);
-          return response.json();
+          return response.text();
         })
-        .then(data => console.log('[SERVER] ✅ Health check test successful:', data))
+        .then(text => console.log('[SERVER] ✅ Health check test successful:', text))
         .catch(err => console.error('[SERVER] ❌ Health check test failed:', err));
     }, 2000);
     
