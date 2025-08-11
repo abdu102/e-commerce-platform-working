@@ -8,7 +8,18 @@ import { AddToCartDto, RemoveCartDto, UpdateCartDto } from '../dto/v2.dto';
 export class CartV2Controller {
   constructor(private readonly cart: CartService) {}
   @Get()
-  async getCart(@Req() req: any) { return this.cart.getCart(req.user.sub); }
+  async getCart(@Req() req: any) {
+    const raw = await this.cart.getCart(req.user.sub);
+    return {
+      items: (raw.items || []).map((it: any) => ({
+        id: String(it.id),
+        productId: String(it.productId),
+        quantity: it.quantity,
+        priceCents: Math.round(Number(it.product?.price ?? it.unitPrice ?? 0) * 100),
+        product: it.product ? { ...it.product, price: (it.product.price ?? 0) } : null,
+      })),
+    };
+  }
   @Post()
   async add(@Req() req: any, @Body() body: AddToCartDto) { return this.cart.addToCart(req.user.sub, body.productId, body.quantity); }
   @Put()

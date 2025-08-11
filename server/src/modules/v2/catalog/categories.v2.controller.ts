@@ -7,6 +7,7 @@ export class CategoriesV2Controller {
 
   @Get()
   async list() {
-    return this.categories.list();
+    const cats = await this.categories.list();
+    return cats.map((c: any) => ({ id: String(c.id), name: c.name ?? c.title ?? '', imageUrl: c.imageUrl || c.image || c.thumbnail || null }));
   }
 }

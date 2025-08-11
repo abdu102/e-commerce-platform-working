@@ -16,6 +16,18 @@ export class ProductsV2Controller {
     // manual paging
     const start = (page - 1) * pageSize;
     const items = products.slice(start, start + pageSize);
-    return { items, total: products.length, page, pageSize };
+    const normalized = items.map((p: any) => ({
+      id: String(p.id),
+      name: p.name,
+      description: p.description,
+      priceCents: Math.round(Number(p.price ?? 0) * 100),
+      imageUrl: p.imageUrl || p.image || null,
+      images: p.images || null,
+      categoryId: String(p.categoryId ?? p.category?.id ?? ''),
+      stock: p.stock ?? p.quantity ?? 0,
+      categoryName: p.category?.name ?? undefined,
+      rating: p.rating ?? p.avgRating ?? undefined,
+    }));
+    return { items: normalized, total: products.length, page, pageSize };
   }
 }

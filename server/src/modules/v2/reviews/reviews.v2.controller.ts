@@ -9,9 +9,22 @@ export class ReviewsV2Controller {
 
   @UseGuards(JwtAuthGuard)
   @Get(':productId')
-  async list(@Param('productId') productId: string) { return this.reviews.list(Number(productId)); }
+  async list(@Param('productId') productId: string) {
+    const list = await this.reviews.list(Number(productId));
+    return list.map((r: any) => ({
+      id: String(r.id),
+      productId: String(r.productId),
+      author: r.author || null,
+      rating: r.rating,
+      comment: r.comment,
+      createdAt: r.createdAt,
+    }));
+  }
 
   @UseGuards(JwtAuthGuard)
   @Post(':productId')
-  async create(@Param('productId') productId: string, @Body() body: ReviewDto) { return this.reviews.create((null as any), { productId: Number(productId), rating: body.rating, comment: body.comment }); }
+  async create(@Param('productId') productId: string, @Body() body: ReviewDto) {
+    const created = await this.reviews.create((null as any), { productId: Number(productId), rating: body.rating, comment: body.comment });
+    return { id: String(created.id), productId: String(created.productId), author: created.author || null, rating: created.rating, comment: created.comment, createdAt: created.createdAt };
+  }
 }
