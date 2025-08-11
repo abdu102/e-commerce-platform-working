@@ -7,6 +7,6 @@ export class CategoriesV2Controller {
 
   @Get()
   async list() {
-    return this.categories.findAll();
+    return this.categories.list();
   }
 }
