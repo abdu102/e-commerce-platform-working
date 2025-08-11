@@ -4,6 +4,9 @@ FROM node:20-alpine
 # Set working directory
 WORKDIR /app
 
+# Install curl for healthcheck
+RUN apk add --no-cache curl
+
 # Copy package files
 COPY package*.json ./
 COPY server/package*.json ./server/
@@ -20,6 +23,9 @@ RUN cd server && npm run build
 
 # Expose port
 EXPOSE 4000
+
+# Docker-level healthcheck using PORT env
+HEALTHCHECK --interval=30s --timeout=5s --retries=5 CMD sh -c "curl -fsS http://localhost:${PORT:-4000}/health || exit 1"
 
 # Start the application (root package.json will cd into server)
 CMD ["npm", "start"]
