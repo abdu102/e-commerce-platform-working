@@ -6,5 +6,6 @@ import { RolesGuard } from '../auth/roles.guard';
 @Module({
   controllers: [CartController],
   providers: [CartService, RolesGuard],
+  exports: [CartService],
 })
 export class CartModule {}
