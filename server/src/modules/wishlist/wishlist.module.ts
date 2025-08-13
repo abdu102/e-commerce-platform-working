@@ -7,6 +7,7 @@ import { WishlistService } from './wishlist.service';
   imports: [PrismaModule],
   controllers: [WishlistController],
   providers: [WishlistService],
+  exports: [WishlistService],
 })
 export class WishlistModule {}
 
