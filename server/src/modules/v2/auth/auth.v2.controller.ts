@@ -2,10 +2,11 @@ import { Body, Controller, Get, Post, Put, Req, UseGuards } from '@nestjs/common
 import { AuthService } from '../../auth/auth.service';
 import { JwtAuthGuard } from '../../auth/jwt-auth.guard';
 import { LoginDto, RegisterDto, RefreshDto } from '../dto/v2.dto';
+import { UsersService } from '../../users/users.service';
 
 @Controller('api/v2/auth')
 export class AuthV2Controller {
-  constructor(private readonly auth: AuthService) {}
+  constructor(private readonly auth: AuthService, private readonly users: UsersService) {}
 
   @Post('login')
   async login(@Body() dto: LoginDto) {
@@ -35,6 +36,6 @@ export class AuthV2Controller {
   @UseGuards(JwtAuthGuard)
   @Put('password')
   async changePassword(@Req() req: any, @Body() dto: { currentPassword: string; newPassword: string }) {
-    return this.auth.changePassword(req.user.sub, dto.currentPassword, dto.newPassword);
+    return this.users.changePassword(req.user.sub, { currentPassword: dto.currentPassword, newPassword: dto.newPassword });
   }
 }
