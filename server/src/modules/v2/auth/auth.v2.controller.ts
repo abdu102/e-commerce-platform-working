@@ -30,12 +30,16 @@ export class AuthV2Controller {
   @UseGuards(JwtAuthGuard)
   @Get('me')
   async me(@Req() req: any) {
-    return this.auth.me(req.user.sub);
+    const raw = req.user?.sub ?? req.user?.userId;
+    const userId: number = typeof raw === 'string' ? parseInt(raw, 10) : Number(raw);
+    return this.auth.me(userId);
   }
 
   @UseGuards(JwtAuthGuard)
   @Put('password')
   async changePassword(@Req() req: any, @Body() dto: { currentPassword: string; newPassword: string }) {
-    return this.users.changePassword(req.user.sub, { currentPassword: dto.currentPassword, newPassword: dto.newPassword });
+    const raw = req.user?.sub ?? req.user?.userId;
+    const userId: number = typeof raw === 'string' ? parseInt(raw, 10) : Number(raw);
+    return this.users.changePassword(userId, { currentPassword: dto.currentPassword, newPassword: dto.newPassword });
   }
 }

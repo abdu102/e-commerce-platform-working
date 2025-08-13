@@ -19,16 +19,30 @@ export class UsersService {
     });
   }
 
-  async updateProfile(userId: number, data: { name: string; email: string }) {
-    const existingUser = await this.prisma.user.findFirst({
-      where: { email: data.email, id: { not: userId } },
-    });
-    if (existingUser) {
-      throw new BadRequestException('Email is already taken');
+  async updateProfile(userId: number, data: { name?: string; email?: string }) {
+    const updateData: any = {};
+    if (data.name !== undefined) {
+      updateData.name = data.name;
+    }
+    if (data.email !== undefined) {
+      const normalizedEmail = String(data.email || '').trim().toLowerCase();
+      const existingUser = await this.prisma.user.findFirst({
+        where: { email: normalizedEmail, id: { not: userId } },
+      });
+      if (existingUser) {
+        throw new BadRequestException('Email is already taken');
+      }
+      updateData.email = normalizedEmail;
+    }
+    if (Object.keys(updateData).length === 0) {
+      return this.prisma.user.findUnique({
+        where: { id: userId },
+        select: { id: true, name: true, email: true, role: true },
+      });
     }
     return this.prisma.user.update({
       where: { id: userId },
-      data: { name: data.name, email: data.email },
+      data: updateData,
       select: { id: true, name: true, email: true, role: true },
     });
   }

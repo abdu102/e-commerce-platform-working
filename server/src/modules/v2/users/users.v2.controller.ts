@@ -10,11 +10,13 @@ export class UsersV2Controller {
   @Patch('me')
   async updateMe(
     @Req() req: any,
-    @Body() dto: { name: string; email: string }
+    @Body() dto: { name?: string; email?: string }
   ) {
-    const userId = Number(req.user?.sub ?? req.user?.userId);
-    return this.users.updateProfile(userId, { name: dto.name, email: dto.email });
+    const raw = req.user?.sub ?? req.user?.userId;
+    const userId: number = typeof raw === 'string' ? parseInt(raw, 10) : Number(raw);
+    return this.users.updateProfile(userId, { name: dto?.name, email: dto?.email });
   }
 }
+
 
 
