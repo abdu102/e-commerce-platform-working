@@ -4,7 +4,7 @@ import { AppModule } from './modules/app.module';
 import { ValidationPipe } from '@nestjs/common';
 import helmet from 'helmet';
 const cors = require('cors');
-import express from 'express';
+import express, { json, urlencoded } from 'express';
 import { join } from 'path';
 
 async function bootstrap() {
@@ -17,6 +17,10 @@ async function bootstrap() {
     const app = await NestFactory.create(AppModule, { cors: true });
     app.use(helmet());
     app.use(cors());
+    // Raise body size limits to support base64 image uploads
+    const bodyLimit = process.env.BODY_LIMIT || '16mb';
+    app.use(json({ limit: bodyLimit }));
+    app.use(urlencoded({ limit: bodyLimit, extended: true }));
     app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
 
     // Get the Express instance
