@@ -6,6 +6,7 @@ import { CartModule } from '../../modules/cart/cart.module';
 import { OrdersModule } from '../../modules/orders/orders.module';
 import { ReviewsModule } from '../../modules/reviews/reviews.module';
 import { UsersModule } from '../../modules/users/users.module';
+import { UsersV2Controller } from './users/users.v2.controller';
 import { AuthV2Controller } from './auth/auth.v2.controller';
 import { ProductsV2Controller } from './catalog/products.v2.controller';
 import { CategoriesV2Controller } from './catalog/categories.v2.controller';
@@ -22,6 +23,7 @@ import { ReviewsV2Controller } from './reviews/reviews.v2.controller';
     CartV2Controller,
     OrdersV2Controller,
     ReviewsV2Controller,
+    UsersV2Controller,
   ],
 })
 export class V2Module {}
