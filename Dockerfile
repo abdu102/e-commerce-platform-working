@@ -1,6 +1,9 @@
 # Use Node.js 20 as base image (required for NestJS 11)
 FROM node:20-alpine
 
+# Cache-busting label to force fresh rebuilds on Railway
+LABEL cache_bust="redeploy-2025-08-13-01"
+
 # Set working directory
 WORKDIR /app
 
