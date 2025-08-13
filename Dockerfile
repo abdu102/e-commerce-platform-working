@@ -2,7 +2,7 @@
 FROM node:20-alpine
 
 # Cache-busting label to force fresh rebuilds on Railway
-LABEL cache_bust="redeploy-2025-08-13-01"
+LABEL cache_bust="redeploy-2025-08-13-02"
 
 # Set working directory
 WORKDIR /app
