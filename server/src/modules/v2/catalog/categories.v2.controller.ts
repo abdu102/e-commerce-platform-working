@@ -9,6 +9,11 @@ export class CategoriesV2Controller {
   @Get()
   async list() {
     const cats = await this.categories.list();
-    return cats.map((c: any) => ({ id: String(c.id), name: c.name ?? c.title ?? '', imageUrl: c.imageUrl ? c.imageUrl : `/api/v2/images/${encodeURIComponent(c.name)}` }));
+    return cats.map((c: any) => ({
+      id: String(c.id),
+      name: c.name ?? c.title ?? '',
+      // Always serve from DB-backed images with cache-busting query
+      imageUrl: `/api/v2/images/${encodeURIComponent(c.name)}?v=1`,
+    }));
   }
 }

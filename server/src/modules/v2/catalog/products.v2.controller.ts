@@ -22,8 +22,11 @@ export class ProductsV2Controller {
       name: p.name,
       description: p.description,
       priceCents: Math.round(Number(p.price ?? 0) * 100),
-      imageUrl: p.imageUrl ? p.imageUrl : (p.name ? `/api/v2/images/${encodeURIComponent(p.name)}` : null),
-      images: Array.isArray(p.images) && p.images.length > 0 ? p.images : (p.name ? [`/api/v2/images/${encodeURIComponent(p.name)}`] : []),
+      imageUrl: p.name ? `/api/v2/images/${encodeURIComponent(p.name)}-1?v=1` : null,
+      images: p.name ? [
+        `/api/v2/images/${encodeURIComponent(p.name)}-1?v=1`,
+        `/api/v2/images/${encodeURIComponent(p.name)}-2?v=1`
+      ] : [],
       categoryId: String(p.categoryId ?? p.category?.id ?? ''),
       stock: p.stock ?? p.quantity ?? 0,
       categoryName: p.category?.name ?? undefined,
