@@ -12,6 +12,7 @@ import { ReviewsModule } from './reviews/reviews.module';
 import { WishlistModule } from './wishlist/wishlist.module';
 import { QnaModule } from './qna/qna.module';
 import { V2Module } from './v2/v2.module';
+import { ImagesModule } from './images/images.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { V2Module } from './v2/v2.module';
     WishlistModule,
     QnaModule,
     V2Module,
+    ImagesModule,
   ],
   controllers: [AppController],
 })

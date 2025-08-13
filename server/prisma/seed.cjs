@@ -37,6 +37,14 @@ async function main() {
       update: {}, 
       create: c 
     });
+    // Seed image record for category name
+    const catImgName = category.name;
+    const catImgData = Buffer.from(`Category: ${catImgName}`); // placeholder bytes; replace with real base64 in uploads
+    await prisma.image.upsert({
+      where: { name: catImgName },
+      update: { data: catImgData, contentType: 'text/plain' },
+      create: { name: catImgName, data: catImgData, contentType: 'text/plain' }
+    });
     createdCategories.push(category);
   }
 
@@ -594,6 +602,13 @@ async function main() {
       where: { name: p.name }, 
       update: {}, 
       create: p 
+    });
+    const prodImgName = p.name;
+    const prodImgData = Buffer.from(`Product: ${prodImgName}`);
+    await prisma.image.upsert({
+      where: { name: prodImgName },
+      update: { data: prodImgData, contentType: 'text/plain' },
+      create: { name: prodImgName, data: prodImgData, contentType: 'text/plain' }
     });
   }
 
